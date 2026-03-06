@@ -3,7 +3,7 @@ requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "gitpush"
+name = "run-git"
 version = "1.0.0"
 description = "Git Made Easy - One Command To Rule Them All"
 readme = "README.md"

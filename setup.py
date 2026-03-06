@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="gitpush",
+    name="run-git",
     version="1.0.0",
     author="Himanshu Kumar",
     author_email="himanshu231204@gmail.com",
