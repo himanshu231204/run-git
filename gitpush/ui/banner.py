@@ -1,23 +1,19 @@
 """
-Banner and UI elements for gitpush
+Banner and UI elements for run-git
 """
 from rich.console import Console
-from rich.panel import Panel
-from rich.text import Text
-from rich.table import Table
-from rich import box
 
 console = Console()
 
 BANNER = """
 ╭━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╮
 ┃                                                                    ┃
-┃     ███████╗███████╗ ██████╗ ██╗████████╗                        ┃
-┃     ██╔════╝╚══███╔╝██╔════╝ ██║╚══██╔══╝                        ┃
-┃     █████╗    ███╔╝ ██║  ███╗██║   ██║                           ┃
-┃     ██╔══╝   ███╔╝  ██║   ██║██║   ██║                           ┃
-┃     ███████╗███████╗╚██████╔╝██║   ██║                           ┃
-┃     ╚══════╝╚══════╝ ╚═════╝ ╚═╝   ╚═╝                           ┃
+┃    ██████╗ ██╗   ██╗███╗   ██╗      ██████╗ ██╗████████╗         ┃
+┃    ██╔══██╗██║   ██║████╗  ██║     ██╔════╝ ██║╚══██╔══╝         ┃
+┃    ██████╔╝██║   ██║██╔██╗ ██║     ██║  ███╗██║   ██║            ┃
+┃    ██╔══██╗██║   ██║██║╚██╗██║     ██║   ██║██║   ██║            ┃
+┃    ██║  ██║╚██████╔╝██║ ╚████║     ╚██████╔╝██║   ██║            ┃
+┃    ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝      ╚═════╝ ╚═╝   ╚═╝            ┃
 ┃                                                                    ┃
 ┃   ═══════════════════════════════════════════════════════════     ┃
 ┃                                                                    ┃
@@ -27,18 +23,18 @@ BANNER = """
 ┃   ┌──────────────────────────────────────────────────────────┐   ┃
 ┃   │  Developer    : Himanshu Kumar                           │   ┃
 ┃   │  GitHub       : @himanshu231204                          │   ┃
-┃   │  Repository   : github.com/himanshu231204/gitpush          │   ┃
+┃   │  Repository   : github.com/himanshu231204/gitpush        │   ┃
 ┃   │  Version      : v1.0.0                                   │   ┃
 ┃   │  License      : MIT                                      │   ┃
 ┃   └──────────────────────────────────────────────────────────┘   ┃
 ┃                                                                    ┃
-┃   Type 'gitpush help' to get started                                ┃
+┃   Type 'run-git help' to get started                              ┃
 ┃                                                                    ┃
 ╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯
 """
 
 def show_banner():
-    """Display the gitpush banner"""
+    """Display the run-git banner"""
     console.print(BANNER, style="bold cyan")
 
 def show_success(message):
