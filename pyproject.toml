@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gitpush"
+version = "1.0.0"
+description = "Git Made Easy - One Command To Rule Them All"
+readme = "README.md"
+authors = [
+    {name = "Himanshu Kumar", email = "himanshu231204@gmail.com"},
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Version Control :: Git",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+]
+keywords = ["git", "cli", "automation", "version-control", "developer-tools"]
+requires-python = ">=3.8"
+dependencies = [
+    "click>=8.0.0",
+    "rich>=13.0.0",
+    "GitPython>=3.1.0",
+    "PyGithub>=1.59.0",
+    "questionary>=1.10.0",
+    "pyyaml>=6.0",
+    "requests>=2.28.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/himanshu231204/gitpush"
+Documentation = "https://github.com/himanshu231204/gitpush#readme"
+Repository = "https://github.com/himanshu231204/gitpush"
+"Bug Tracker" = "https://github.com/himanshu231204/gitpush/issues"
+
+[project.scripts]
+gitpush = "gitpush.cli:main"
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
