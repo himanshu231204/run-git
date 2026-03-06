@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "run-git"
-version = "1.0.0"
+version = "1.0.1"
 description = "Git Made Easy - One Command To Rule Them All"
 readme = "README.md"
 authors = [
@@ -42,7 +42,7 @@ Repository = "https://github.com/himanshu231204/gitpush"
 "Bug Tracker" = "https://github.com/himanshu231204/gitpush/issues"
 
 [project.scripts]
-gitpush = "gitpush.cli:main"
+run-git = "gitpush.cli:main"
 
 [tool.black]
 line-length = 100
