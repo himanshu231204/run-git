@@ -27,7 +27,7 @@
 ┃                                                                    ┃
 ╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯
 ```
-
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/run-git?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/run-git)
 [![PyPI version](https://badge.fury.io/py/run-git.svg)](https://badge.fury.io/py/run-git)
 [![Tests](https://github.com/himanshu231204/gitpush/workflows/Tests/badge.svg)](https://github.com/himanshu231204/gitpush/actions)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
