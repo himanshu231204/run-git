@@ -1,5 +1,49 @@
 # Changelog
 
+## 📦 RUN-GIT v1.0.5 – 2026-03-13
+
+### ✨ Improvements
+
+* Improved **Git push reliability** during repository creation.
+* Ensured default branch is automatically set to **main**.
+* Replaced `git add *` with `git add -A` for better file tracking.
+* Improved repository initialization workflow.
+
+### 🐛 Bug Fixes
+
+* Fixed **"refusing to merge unrelated histories"** error during first push.
+* Fixed push failures when GitHub repository already contained commits.
+* Improved handling of repositories with existing remote configuration.
+
+### 🔧 Internal Changes
+
+* Added retry logic for push operations.
+* Automatic **pull + sync** if initial push fails.
+* Improved CLI stability and error messages.
+
+### 🚀 Example
+
+```bash
+run-git new my-project --quick
+```
+
+Creates a GitHub repository and pushes it instantly.
+
+### 📦 Installation
+
+```bash
+pip install --upgrade run-git
+```
+
+### 🔗 Repository
+
+https://github.com/himanshu231204/gitpush
+
+---
+
+⭐ If you find this project useful, consider giving it a star.
+
+
 ## [1.0.4] - 2026-03-13
  
 ### 🆕 Added
