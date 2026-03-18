@@ -1,5 +1,102 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+[1.0.7] - 2026-03-18
+🆕 Added
+
+Smart Folder Detection: Automatically detects and lists existing files in folder before creating repository
+
+Shows all files in current directory
+Asks for confirmation before including them
+Prevents accidental overwrites
+
+
+Existing Repository Handling: Intelligent handling of existing git repositories
+
+Detects if folder is already a git repository
+Option to connect existing local repo to new GitHub repository
+Smart remote management (replace or keep existing)
+
+
+File Conflict Prevention: Never overwrites existing files
+
+Skips .gitignore if already exists
+Skips LICENSE if already exists
+Skips README.md if already exists
+Clear messages for each skipped file
+
+
+Enhanced Remote Management:
+
+Detects existing remote 'origin'
+Option to replace or keep existing remote
+Safe remote URL updates
+
+
+
+🔧 Improved
+
+URL Handling: Fixed "protocol 'https' is not supported" error
+
+Removes all whitespace and invisible characters from URLs
+Clean URL formatting before remote operations
+Robust URL validation
+
+
+Authentication: Token-based push authentication
+
+Embeds GitHub token in push URL
+More reliable authentication on Windows
+Better credential handling
+
+
+Push Reliability: Enhanced push mechanism
+
+Uses set_upstream=True flag
+Force push option on conflicts
+Better sync with remote repositories
+
+
+Commit Messages: Context-aware commit messages
+
+"Initial commit" for new repositories
+"Connect to GitHub repository" for existing repos
+Clearer commit descriptions
+
+
+User Feedback: More informative progress messages
+
+Shows what files are being staged
+Clear indication of skipped operations
+Better success/warning/error messages
+
+
+
+🐛 Fixed
+
+Critical: Fixed push failures due to malformed URLs
+Fixed "protocol 'https' is not supported" error
+Fixed issues with existing git repositories
+Fixed remote 'origin' conflicts
+Improved handling of unrelated histories
+Better error recovery on push failures
+
+🎯 User Experience
+
+Confirmation Prompts: Ask before important operations
+
+Confirm before including existing files
+Confirm before replacing remotes
+Confirm before connecting existing repos
+
+
+Smart Defaults: Intelligent behavior based on context
+
+Auto-detects if folder has files
+Preserves existing git history
+Handles all edge cases gracefully
+
 ## [1.0.6] - 2026-03-15
  
 ### 🆕 Added
