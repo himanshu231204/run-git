@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file.
 
+[1.0.8] - 2026-03-18
+
+### ✨ Major Fixes
+
+* 🔥 Fixed "failed to push some refs" error
+* ✅ Ensured GitHub repositories are created EMPTY (`auto_init=False`)
+* ❌ Removed gitignore & license creation on GitHub (now handled locally)
+* 🔁 Added robust push retry mechanism (pull + push fallback)
+* 🔗 Fixed remote origin handling and cleanup
+
+---
+
+### 🛠 Improvements
+
+* ⚡ Clean GitPython push using explicit refspec (`main:main`)
+* 🧠 Smart commit handling (avoids empty commit crashes)
+* 🔐 Improved authentication flow (secure token handling)
+* 📦 Better error handling and CLI feedback
+* 🧹 Cleaner repository initialization flow
+
+---
+
+### 🧠 Internal Enhancements
+
+* Improved GitHub API usage (Bearer token support)
+* Removed unstable token-based push URL hack
+* Better branch handling (safe rename to main)
+* More reliable staging and commit detection
+
+---
+
+### 🎯 Result
+
+* 🚀 100% reliable repo creation + push
+* 🧩 No merge conflicts on first push
+* ⚙️ Production-ready Git automation
+
+---
+
+
 [1.0.7] - 2026-03-18
 🆕 Added
 

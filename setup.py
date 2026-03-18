@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="run-git",
-    version="1.0.7",
+    version="1.0.8",
     author="Himanshu Kumar",
     author_email="",
     description="Git Made Easy - One Command To Rule Them All",
