@@ -131,304 +131,227 @@ def handle_quick_push(git_ops):
 
 
 
+
 def handle_create_repo(git_ops):
-    """Handle GitHub repository creation from interactive mode"""
+    """
+    Production-ready GitHub repo creation + push
+    Works with EMPTY remote repo (no conflicts)
+    """
+
     from gitpush.core.github_manager import GitHubManager
-    from git import Repo, InvalidGitRepositoryError
+    from git import Repo, InvalidGitRepositoryError, GitCommandError
     import glob
-    
+    import os
+
     gh = GitHubManager()
     ui = InteractiveUI()
-    
-    # Authenticate
+
+    # ============================================================
+    # STEP 1: AUTH
+    # ============================================================
     if not gh.authenticate():
         return
-    
-    # Check if already a git repo
+
+    # ============================================================
+    # STEP 2: CHECK LOCAL REPO
+    # ============================================================
+    is_existing_repo = False
+
     try:
-        repo = Repo('.')
-        show_error("This directory is already a git repository!")
-        show_info(f"Remote: {repo.remotes.origin.url if repo.remotes else 'None'}")
-        
-        # Check if repo has remote
-        if repo.remotes:
-            show_warning("Repository already has remote configured!")
-            if not ui.confirm_action("Do you still want to create a new GitHub repository?"):
+        local_repo = Repo('.')
+        is_existing_repo = True
+        show_warning("Already a git repository")
+
+        if 'origin' in [r.name for r in local_repo.remotes]:
+            show_info(f"Remote: {local_repo.remote('origin').url}")
+
+            if not ui.confirm_action("Replace remote with new repo?"):
                 return
-            # If yes, we'll create new repo but skip local init
         else:
-            # No remote, ask if want to connect existing repo
-            if ui.confirm_action("Connect this existing local repo to new GitHub repository?"):
-                pass  # Continue to create GitHub repo and connect
-            else:
+            if not ui.confirm_action("Connect this repo to GitHub?"):
                 return
-                
+
     except InvalidGitRepositoryError:
-        # Not a git repo - check if folder has files
-        files_in_folder = glob.glob('*') + glob.glob('.*')
-        # Filter out common system files
-        files_in_folder = [f for f in files_in_folder if f not in ['.', '..', '.git']]
-        
-        if files_in_folder:
-            show_info(f"\n📂 Found {len(files_in_folder)} file(s) in current folder:")
-            # Show first 5 files
-            for f in files_in_folder[:5]:
+        files = [f for f in (glob.glob('*') + glob.glob('.*'))
+                 if f not in ['.', '..', '.git']]
+
+        if files:
+            show_info(f"\n📂 Found {len(files)} file(s)")
+            for f in files[:5]:
                 show_info(f"   • {f}")
-            if len(files_in_folder) > 5:
-                show_info(f"   ... and {len(files_in_folder) - 5} more")
-            
-            if not ui.confirm_action("\nCreate repository and include these files?"):
-                show_info("Cancelled")
+
+            if len(files) > 5:
+                show_info(f"   ... +{len(files) - 5} more")
+
+            if not ui.confirm_action("Create repo with these files?"):
                 return
-    
-    # Get repo name
-    repo_name = questionary.text(
-        "Repository name:",
-        validate=lambda text: len(text) > 0 or "Name cannot be empty"
-    ).ask()
-    
+
+    # ============================================================
+    # STEP 3: USER INPUT
+    # ============================================================
+    repo_name = questionary.text("Repository name:").ask()
     if not repo_name:
-        show_info("Cancelled")
         return
-    
-    # Build configuration interactively
-    config = {'name': repo_name}
-    
-    show_info("\n📝 Repository Configuration")
-    
-    # Description
-    description = questionary.text(
-        "Repository description:",
-        default=""
-    ).ask()
-    config['description'] = description
-    
-    # Visibility
+
+    description = questionary.text("Description:", default="").ask()
     visibility = questionary.select(
-        "Repository visibility:",
-        choices=['Public', 'Private']
+        "Visibility:", choices=['Public', 'Private']
     ).ask()
-    config['private'] = (visibility == 'Private')
-    
+
     # Gitignore
     detected = gh.detect_language()
-    show_info(f"Detected language: {detected}")
-    
     use_detected = questionary.confirm(
-        f"Use {detected} gitignore template?"
+        f"Use {detected} gitignore?"
     ).ask()
-    
-    if use_detected:
-        config['gitignore'] = detected
-    else:
-        templates = gh.get_gitignore_templates()
-        gitignore = questionary.select(
-            "Select gitignore template:",
-            choices=['None'] + templates
-        ).ask()
-        config['gitignore'] = None if gitignore == 'None' else gitignore
-    
+
+    gitignore = detected if use_detected else None
+
     # License
     licenses = gh.get_license_templates()
-    license_choice = questionary.select(
-        "Select license:",
-        choices=list(licenses.keys())
+    license_key = questionary.select(
+        "License:", choices=list(licenses.keys())
     ).ask()
-    config['license'] = licenses[license_choice]
-    
-    # README
-    config['readme'] = questionary.confirm(
-        "Create README.md?"
-    ).ask()
-    
-    # Summary
-    show_info("\n📋 Summary:")
-    show_info(f"  Name: {config['name']}")
-    show_info(f"  Description: {config.get('description', 'None')}")
-    show_info(f"  Visibility: {'Private' if config.get('private') else 'Public'}")
-    show_info(f"  Gitignore: {config.get('gitignore', 'None')}")
-    show_info(f"  License: {config.get('license', 'None')}")
-    show_info(f"  README: {'Yes' if config.get('readme') else 'No'}")
-    
-    confirm = questionary.confirm("\nCreate repository?").ask()
-    if not confirm:
-        show_info("Cancelled")
+
+    create_readme = questionary.confirm("Create README?").ask()
+
+    config = {
+        "name": repo_name,
+        "description": description,
+        "private": (visibility == 'Private')
+    }
+
+    if not questionary.confirm("Create repository?").ask():
         return
-    
-    # Create on GitHub
+
+    # ============================================================
+    # STEP 4: CREATE EMPTY GITHUB REPO
+    # ============================================================
     github_repo = gh.create_repository(config)
     if not github_repo:
         return
-    
-    # Check if already initialized
-    is_already_git_repo = False
-    try:
-        existing_repo = Repo('.')
-        is_already_git_repo = True
-    except InvalidGitRepositoryError:
-        pass
-    
-    # Initialize local repository (if not already done)
-    if not is_already_git_repo:
-        show_progress("Initializing local repository...")
+
+    # ============================================================
+    # STEP 5: INIT LOCAL
+    # ============================================================
+    if not is_existing_repo:
+        show_progress("Initializing repo...")
         local_repo = Repo.init('.')
-    else:
-        local_repo = Repo('.')
-        show_info("Using existing local repository...")
-    
-    # Create .gitignore (only if doesn't exist)
-    if config.get('gitignore') and not os.path.exists('.gitignore'):
-        show_progress("Creating .gitignore...")
-        gitignore_content = gh.get_gitignore_content(config['gitignore'])
-        if gitignore_content:
+
+    # ============================================================
+    # STEP 6: CREATE FILES LOCALLY
+    # ============================================================
+
+    # .gitignore
+    if gitignore and not os.path.exists('.gitignore'):
+        content = gh.get_gitignore_content(gitignore)
+        if content:
             with open('.gitignore', 'w') as f:
-                f.write(gitignore_content)
-            show_success(".gitignore created")
-    elif os.path.exists('.gitignore'):
-        show_info(".gitignore already exists, skipping...")
-    
-    # Create LICENSE (only if doesn't exist)
-    if config.get('license') and not os.path.exists('LICENSE'):
-        show_progress("Creating LICENSE...")
+                f.write(content)
+
+    # LICENSE
+    if license_key != 'None' and not os.path.exists('LICENSE'):
         user = gh.github.get_user()
-        license_content = gh.get_license_content(
-            config['license'],
+        content = gh.get_license_content(
+            licenses[license_key],
             user.name or user.login
         )
-        if license_content:
+        if content:
             with open('LICENSE', 'w') as f:
-                f.write(license_content)
-            show_success("LICENSE created")
-    elif os.path.exists('LICENSE'):
-        show_info("LICENSE already exists, skipping...")
-    
-    # Create README (only if doesn't exist)
-    if config.get('readme') and not os.path.exists('README.md'):
-        show_progress("Creating README.md...")
+                f.write(content)
+
+    # README
+    if create_readme and not os.path.exists('README.md'):
         user = gh.github.get_user()
-        readme_content = f"""# {config['name']}
 
-{config.get('description', '')}
-
-## Installation
-
-```bash
-# Add installation instructions
-```
-
-## Usage
-
-```bash
-# Add usage examples
-```
-
-## Author
-
-{user.name or user.login} ([@{user.login}](https://github.com/{user.login}))
-
-## License
-
-{config.get('license', 'MIT').upper() if config.get('license') else 'All rights reserved'}
-"""
         with open('README.md', 'w') as f:
-            f.write(readme_content)
-        show_success("README.md created")
-    elif os.path.exists('README.md'):
-        show_info("README.md already exists, skipping...")
-    
-    # Add or update remote
-    show_progress("Configuring remote origin...")
-    # Get clean HTTPS URL and remove any whitespace
-    clone_url = str(github_repo.clone_url).strip()
-    clone_url = ''.join(clone_url.split())  # Remove ALL whitespace
-    
-    try:
-        # Check if remote 'origin' already exists
-        if 'origin' in [remote.name for remote in local_repo.remotes]:
-            show_warning("Remote 'origin' already exists")
-            if ui.confirm_action("Replace existing remote 'origin' with new repository?"):
-                local_repo.delete_remote('origin')
-                local_repo.create_remote('origin', clone_url)
-                show_success("Remote 'origin' updated")
-            else:
-                show_info("Keeping existing remote, operation cancelled")
-                return
-        else:
-            local_repo.create_remote('origin', clone_url)
-            show_success("Remote 'origin' added")
-    except Exception as e:
-        show_error(f"Failed to configure remote: {str(e)}")
-        return
-    
-    # Stage all files (including existing ones)
-    show_progress("Staging files...")
+            f.write(f"# {repo_name}\n\n{description}\n")
+
+    # ============================================================
+    # STEP 7: REMOTE SETUP
+    # ============================================================
+    remote_url = github_repo.clone_url.strip()
+
+    if 'origin' in [r.name for r in local_repo.remotes]:
+        local_repo.delete_remote('origin')
+
+    local_repo.create_remote('origin', remote_url)
+
+    # ============================================================
+    # STEP 8: ADD + COMMIT
+    # ============================================================
     local_repo.git.add(A=True)
-    
-    # Check if there are any changes to commit
-    if local_repo.is_dirty() or local_repo.untracked_files:
-        # Commit (initial or with existing files)
-        show_progress("Creating commit...")
+
+    staged = local_repo.git.diff('--cached', '--name-only').split('\n')
+    staged = [f for f in staged if f]
+
+    if staged:
         try:
-            # Check if there are existing commits
-            try:
-                local_repo.head.commit
-                commit_message = f"Connect to GitHub repository: {config['name']}"
-            except:
-                commit_message = "Initial commit"
-            
-            local_repo.index.commit(commit_message)
-            show_success(f"Committed: {commit_message}")
-        except Exception as e:
-            show_warning(f"Commit note: {str(e)}")
+            local_repo.head.commit
+            msg = f"Add files to {repo_name}"
+        except:
+            msg = "Initial commit"
+
+        local_repo.index.commit(msg)
+        show_success(f"Committed: {msg}")
     else:
-        show_info("No changes to commit")
-    
-    # Ensure branch is main
-    show_progress("Setting up main branch...")
+        show_warning("Nothing to commit")
+
+    # ============================================================
+    # STEP 9: BRANCH FIX
+    # ============================================================
     try:
-        current_branch = local_repo.active_branch.name
-        if current_branch != 'main':
-            local_repo.git.branch('-M', 'main')
-            show_success("Renamed branch to 'main'")
-        else:
-            show_info("Already on 'main' branch")
-    except Exception as e:
-        show_warning(f"Branch setup: {str(e)}")
-    
-    # Push to GitHub with token authentication
-    show_progress("Pushing to GitHub...")
+        current = local_repo.active_branch.name
+    except:
+        current = None
+
+    if current != 'main':
+        local_repo.git.branch('-M', 'main')
+
+    # ============================================================
+    # STEP 10: PUSH (FINAL FIXED LOGIC)
+    # ============================================================
+    show_progress("Pushing...")
+
     origin = local_repo.remote('origin')
-    
-    # Set push URL with token for authentication
-    push_url = clone_url.replace('https://', f'https://{gh.token}@')
-    origin.set_url(push_url, push=True)
-    
+    success = False
+
     try:
-        origin.push('main', set_upstream=True)
-        show_success("Repository pushed successfully!")
-    except Exception as e:
-        show_warning("Push failed. Attempting to sync with remote...")
+        origin.push(refspec='main:main', set_upstream=True)
+        success = True
+        show_success("Push successful")
+
+    except GitCommandError:
+        show_warning("Push failed, retrying with pull...")
+
         try:
-            local_repo.git.pull('origin', 'main', '--allow-unrelated-histories', '--no-edit')
-            origin.push('main', set_upstream=True, force=True)
-            show_success("Repository synced and pushed successfully!")
-        except Exception as sync_error:
-            show_error(f"Push failed after retry: {str(sync_error)}")
-            show_info("Repository created on GitHub but local push failed.")
-            show_info(f"🔗 {github_repo.html_url}")
-            show_info(f"\nManual push:")
-            show_info(f"  git remote set-url origin {clone_url}")
-            show_info(f"  git pull origin main --allow-unrelated-histories")
-            show_info(f"  git push -u origin main")
-            return
-    
-    # Success!
-    show_success("\n🎉 Repository created successfully!")
-    show_info(f"🔗 {github_repo.html_url}")
-    show_info(f"📂 Local: {os.getcwd()}")
-    show_info("\nNext steps:")
-    show_info("  1. Add your code")
-    show_info("  2. run-git push")
+            local_repo.git.pull(
+                'origin', 'main',
+                '--allow-unrelated-histories',
+                '--no-edit'
+            )
+
+            origin.push(refspec='main:main', set_upstream=True)
+            success = True
+            show_success("Push successful after sync")
+
+        except Exception as e:
+            show_error(f"Push failed: {str(e)}")
+
+    # ============================================================
+    # FINAL OUTPUT
+    # ============================================================
+    print("\n" + "=" * 60)
+
+    if success:
+        show_success("🎉 Repo created & pushed!")
+        show_info(f"🔗 {github_repo.html_url}")
+    else:
+        show_warning("Repo created but push failed")
+        show_info(f"🔗 {github_repo.html_url}")
+
+    print("=" * 60 + "\n")
+
+
 
 
 def handle_branch_operations(git_ops, ui):
