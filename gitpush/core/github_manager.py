@@ -1,8 +1,7 @@
 
 """
 GitHub integration for run-git
-Handles repo creation, authentication, and GitHub API operations
-PRODUCTION READY VERSION (Fixed push conflicts + improved API handling)
+Production-ready version (no push conflicts)
 """
 
 import os
@@ -11,14 +10,10 @@ import requests
 from pathlib import Path
 from github import Github, GithubException
 import questionary
-from gitpush.ui.banner import (
-    show_success, show_error, show_warning, show_info, show_progress
-)
+from gitpush.ui.banner import show_success, show_error, show_warning, show_info, show_progress
 
 
 class GitHubManager:
-    """Manage GitHub operations"""
-
     CONFIG_DIR = Path.home() / '.run-git'
     CONFIG_FILE = CONFIG_DIR / 'config.yml'
 
@@ -28,7 +23,7 @@ class GitHubManager:
         self._load_config()
 
     # ============================================================
-    # CONFIG HANDLING
+    # CONFIG
     # ============================================================
     def _load_config(self):
         try:
@@ -39,52 +34,49 @@ class GitHubManager:
                     if self.token:
                         self.github = Github(self.token)
         except Exception as e:
-            show_warning(f"Could not load config: {str(e)}")
+            show_warning(f"Config load failed: {str(e)}")
 
     def _save_config(self):
         try:
             self.CONFIG_DIR.mkdir(exist_ok=True)
-            config = {'github_token': self.token}
 
             with open(self.CONFIG_FILE, 'w') as f:
-                yaml.dump(config, f)
+                yaml.dump({'github_token': self.token}, f)
 
             os.chmod(self.CONFIG_FILE, 0o600)
-            show_success("GitHub token saved securely")
+            show_success("Token saved")
 
         except Exception as e:
-            show_error(f"Failed to save config: {str(e)}")
+            show_error(f"Save failed: {str(e)}")
 
     # ============================================================
-    # AUTHENTICATION
+    # AUTH
     # ============================================================
     def authenticate(self):
-        """Authenticate with GitHub"""
-
         if self.token and self.github:
             try:
                 user = self.github.get_user()
-                _ = user.login  # force API call
+                _ = user.login
                 return True
-            except Exception:
-                show_warning("Saved token is invalid")
+            except:
+                show_warning("Invalid saved token")
                 self.token = None
 
-        show_info("\nGitHub Personal Access Token required")
-        show_info("Create one at: https://github.com/settings/tokens")
+        show_info("\nGitHub Token required")
+        show_info("https://github.com/settings/tokens")
         show_info("Scopes: repo, user")
 
-        token = questionary.password("Enter your GitHub token:").ask()
+        token = questionary.password("Enter token:").ask()
 
         if not token:
-            show_error("Token is required")
+            show_error("Token required")
             return False
 
         try:
             gh = Github(token)
             user = gh.get_user().login
 
-            show_success(f"Authenticated as: {user}")
+            show_success(f"Logged in as {user}")
 
             self.token = token
             self.github = gh
@@ -92,150 +84,139 @@ class GitHubManager:
             return True
 
         except Exception as e:
-            show_error(f"Authentication failed: {str(e)}")
+            show_error(f"Auth failed: {str(e)}")
             return False
 
     # ============================================================
-    # REPOSITORY HELPERS
+    # HELPERS
     # ============================================================
-    def repo_exists(self, repo_name):
+    def get_gitignore_templates(self):
+        return [
+            'Python', 'Node', 'Java', 'Go', 'Rust',
+            'C++', 'C', 'Ruby', 'PHP', 'Swift',
+            'Kotlin', 'Dart', 'R'
+        ]
+
+    def get_license_templates(self):
+        return {
+            'MIT': 'mit',
+            'Apache 2.0': 'apache-2.0',
+            'GPL v3': 'gpl-3.0',
+            'BSD 3-Clause': 'bsd-3-clause',
+            'ISC': 'isc',
+            'None': None
+        }
+
+    def repo_exists(self, name):
         try:
-            user = self.github.get_user()
-            user.get_repo(repo_name)
+            self.github.get_user().get_repo(name)
             return True
         except:
             return False
 
-    def suggest_repo_name(self, base_name):
-        counter = 1
+    def suggest_repo_name(self, base):
+        i = 1
         while True:
-            new_name = f"{base_name}-{counter}"
-            if not self.repo_exists(new_name):
-                return new_name
-            counter += 1
-            if counter > 10:
-                import time
-                return f"{base_name}-{int(time.time())}"
+            name = f"{base}-{i}"
+            if not self.repo_exists(name):
+                return name
+            i += 1
 
-    # ============================================================
-    # LANGUAGE DETECTION
-    # ============================================================
     def detect_language(self):
-        if Path('requirements.txt').exists() or Path('setup.py').exists():
+        if Path('requirements.txt').exists():
             return 'Python'
         elif Path('package.json').exists():
             return 'Node'
-        elif Path('pom.xml').exists() or Path('build.gradle').exists():
+        elif Path('pom.xml').exists():
             return 'Java'
-        elif Path('go.mod').exists():
-            return 'Go'
-        elif Path('Cargo.toml').exists():
-            return 'Rust'
-        elif Path('Gemfile').exists():
-            return 'Ruby'
-        elif Path('composer.json').exists():
-            return 'PHP'
         return 'Python'
 
     # ============================================================
-    # CREATE REPOSITORY (CRITICAL FIX HERE)
+    # 🔥 FIXED CREATE REPO (EMPTY REPO)
     # ============================================================
     def create_repository(self, config):
         """
-        Create EMPTY GitHub repository
-
-        IMPORTANT:
-        - No gitignore_template
-        - No license_template
-        - No auto_init
+        Create EMPTY GitHub repository (NO FILES)
         """
 
         try:
             user = self.github.get_user()
 
-            # Check if repo exists
+            # Check exists
             if self.repo_exists(config['name']):
-                show_warning(f"Repository '{config['name']}' already exists")
+                show_warning("Repo exists")
 
-                suggestion = self.suggest_repo_name(config['name'])
-                show_info(f"Suggested: {suggestion}")
+                new_name = self.suggest_repo_name(config['name'])
+                show_info(f"Suggested: {new_name}")
 
-                use = questionary.confirm(
-                    f"Use '{suggestion}' instead?"
-                ).ask()
-
-                if use:
-                    config['name'] = suggestion
+                if questionary.confirm(f"Use {new_name}?").ask():
+                    config['name'] = new_name
                 else:
                     return None
 
-            show_progress(f"Creating repository '{config['name']}'...")
+            show_progress(f"Creating '{config['name']}'...")
 
-            # 🔥 CRITICAL: EMPTY REPO CREATION
             repo = user.create_repo(
                 name=config['name'],
                 description=config.get('description', ''),
                 private=config.get('private', False),
-                auto_init=False,   # MUST
+                auto_init=False,   # 🔥 CRITICAL
                 has_issues=True,
                 has_wiki=True,
                 has_downloads=True
             )
 
-            show_success(f"Repository created: {repo.html_url}")
+            show_success(f"Created: {repo.html_url}")
             return repo
 
         except GithubException as e:
-            show_error(f"GitHub Error: {e.data.get('message', str(e))}")
+            show_error(f"GitHub error: {e.data.get('message', str(e))}")
             return None
 
         except Exception as e:
-            show_error(f"Unexpected error: {str(e)}")
+            show_error(str(e))
             return None
 
     # ============================================================
-    # CONTENT FETCHERS
+    # CONTENT FETCH
     # ============================================================
     def get_gitignore_content(self, template):
         try:
             url = f"https://api.github.com/gitignore/templates/{template}"
+            headers = {"Authorization": f"Bearer {self.token}"}
 
-            headers = {
-                'Authorization': f'Bearer {self.token}'
-            }
+            r = requests.get(url, headers=headers)
 
-            response = requests.get(url, headers=headers)
-
-            if response.status_code == 200:
-                return response.json().get('source', '')
+            if r.status_code == 200:
+                return r.json().get('source', '')
             else:
-                show_warning(f"Gitignore fetch failed: {response.status_code}")
+                show_warning(f"Gitignore failed: {r.status_code}")
                 return None
 
         except Exception as e:
-            show_warning(f"Gitignore error: {str(e)}")
+            show_warning(str(e))
             return None
 
-    def get_license_content(self, license_key, author_name):
+    def get_license_content(self, key, author):
         try:
-            url = f"https://api.github.com/licenses/{license_key}"
+            url = f"https://api.github.com/licenses/{key}"
+            r = requests.get(url)
 
-            response = requests.get(url)
-
-            if response.status_code == 200:
-                content = response.json().get('body', '')
+            if r.status_code == 200:
+                text = r.json().get('body', '')
 
                 import datetime
-                year = datetime.datetime.now().year
+                year = str(datetime.datetime.now().year)
 
-                content = content.replace('[year]', str(year))
-                content = content.replace('[fullname]', author_name)
+                text = text.replace('[year]', year)
+                text = text.replace('[fullname]', author)
 
-                return content
+                return text
             else:
-                show_warning(f"License fetch failed: {response.status_code}")
+                show_warning(f"License failed: {r.status_code}")
                 return None
 
         except Exception as e:
-            show_warning(f"License error: {str(e)}")
+            show_warning(str(e))
             return None
+

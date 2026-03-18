@@ -19,7 +19,7 @@
 ┃   │  Developer    : Himanshu Kumar                           │   ┃
 ┃   │  GitHub       : @himanshu231204                          │   ┃
 ┃   │  Repository   : github.com/himanshu231204/gitpush        │   ┃
-┃   │  Version      : v1.0.8                                   │   ┃
+┃   │  Version      : v1.0.9                                   │   ┃
 ┃   │  License      : MIT                                      │   ┃
 ┃   └──────────────────────────────────────────────────────────┘   ┃
 ┃                                                                    ┃

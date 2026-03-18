@@ -132,10 +132,11 @@ def handle_quick_push(git_ops):
 
 
 
+
 def handle_create_repo(git_ops):
     """
-    Production-ready GitHub repo creation + push
-    Works with EMPTY remote repo (no conflicts)
+    FINAL production-ready version
+    Fully synced with GitHubManager (EMPTY repo logic)
     """
 
     from gitpush.core.github_manager import GitHubManager
@@ -187,13 +188,14 @@ def handle_create_repo(git_ops):
                 return
 
     # ============================================================
-    # STEP 3: USER INPUT
+    # STEP 3: INPUT
     # ============================================================
     repo_name = questionary.text("Repository name:").ask()
     if not repo_name:
         return
 
     description = questionary.text("Description:", default="").ask()
+
     visibility = questionary.select(
         "Visibility:", choices=['Public', 'Private']
     ).ask()
@@ -224,7 +226,7 @@ def handle_create_repo(git_ops):
         return
 
     # ============================================================
-    # STEP 4: CREATE EMPTY GITHUB REPO
+    # STEP 4: CREATE EMPTY REPO (CRITICAL)
     # ============================================================
     github_repo = gh.create_repository(config)
     if not github_repo:
@@ -247,6 +249,7 @@ def handle_create_repo(git_ops):
         if content:
             with open('.gitignore', 'w') as f:
                 f.write(content)
+            show_success(".gitignore created")
 
     # LICENSE
     if license_key != 'None' and not os.path.exists('LICENSE'):
@@ -258,27 +261,34 @@ def handle_create_repo(git_ops):
         if content:
             with open('LICENSE', 'w') as f:
                 f.write(content)
+            show_success("LICENSE created")
 
     # README
     if create_readme and not os.path.exists('README.md'):
-        user = gh.github.get_user()
-
         with open('README.md', 'w') as f:
             f.write(f"# {repo_name}\n\n{description}\n")
+        show_success("README.md created")
 
     # ============================================================
     # STEP 7: REMOTE SETUP
     # ============================================================
     remote_url = github_repo.clone_url.strip()
 
-    if 'origin' in [r.name for r in local_repo.remotes]:
-        local_repo.delete_remote('origin')
+    try:
+        if 'origin' in [r.name for r in local_repo.remotes]:
+            local_repo.delete_remote('origin')
 
-    local_repo.create_remote('origin', remote_url)
+        local_repo.create_remote('origin', remote_url)
+        show_success("Remote configured")
+
+    except Exception as e:
+        show_error(f"Remote error: {str(e)}")
+        return
 
     # ============================================================
     # STEP 8: ADD + COMMIT
     # ============================================================
+    show_progress("Staging files...")
     local_repo.git.add(A=True)
 
     staged = local_repo.git.diff('--cached', '--name-only').split('\n')
@@ -306,9 +316,10 @@ def handle_create_repo(git_ops):
 
     if current != 'main':
         local_repo.git.branch('-M', 'main')
+        show_success("Branch set to main")
 
     # ============================================================
-    # STEP 10: PUSH (FINAL FIXED LOGIC)
+    # STEP 10: PUSH (ROBUST)
     # ============================================================
     show_progress("Pushing...")
 
@@ -321,7 +332,7 @@ def handle_create_repo(git_ops):
         show_success("Push successful")
 
     except GitCommandError:
-        show_warning("Push failed, retrying with pull...")
+        show_warning("Push failed, syncing...")
 
         try:
             local_repo.git.pull(
@@ -343,13 +354,19 @@ def handle_create_repo(git_ops):
     print("\n" + "=" * 60)
 
     if success:
-        show_success("🎉 Repo created & pushed!")
+        show_success("🎉 Repo created & pushed successfully!")
         show_info(f"🔗 {github_repo.html_url}")
+        show_info(f"📂 {os.getcwd()}")
     else:
         show_warning("Repo created but push failed")
         show_info(f"🔗 {github_repo.html_url}")
 
     print("=" * 60 + "\n")
+
+
+
+
+
 
 
 

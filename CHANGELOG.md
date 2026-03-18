@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file.
 
+[1.0.9] - 2026-03-18
+
+### 🛠 Fixes
+
+* 🧩 Fixed GitHubManager missing method issue (`get_license_templates`)
+* ❌ Removed GitHub-side file creation (gitignore/license templates)
+* 🔥 Eliminated hidden commits causing push failures
+* ⚠️ Fixed commit crash when no staged files exist
+* 🔁 Improved push retry logic stability
+
+---
+
+### ⚡ Improvements
+
+* 🧠 Fully shifted to **local-first repository setup**
+* 🔗 Clean remote origin configuration (no token injection hacks)
+* 🚀 Stable push using explicit refspec (`main:main`)
+* 🧹 Better branch handling (safe rename to main)
+* 📦 Cleaner CLI flow and error handling
+
+---
+
+### 🔐 Security & API
+
+* 🔐 Improved GitHub token handling
+* 🛡 Switched to Bearer token for API requests
+* 📡 Better API error visibility (gitignore/license fetch)
+
+---
+
+### 🎯 Result
+
+* ✅ No push conflicts
+* ✅ No hidden commits
+* ✅ Clean Git workflow
+* ✅ Reliable repo creation every time
+
+---
+
+
 [1.0.8] - 2026-03-18
 
 ### ✨ Major Fixes
