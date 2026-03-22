@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "run-git"
 version = "1.0.9"
-description = "Git Made Easy - One Command To Rule Them All"
+description = "Git automation CLI — one command to add, commit, pull & push with smart commit messages, TUI, and GitHub repo creation"
 readme = "README.md"
 authors = [
     {name = "Himanshu Kumar", email = "himanshu231204@gmail.com"},
@@ -23,7 +23,12 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Operating System :: OS Independent",
 ]
-keywords = ["git", "cli", "automation", "version-control", "developer-tools"]
+keywords = [
+    "git", "cli", "automation", "version-control", "developer-tools",
+    "git-automation", "productivity", "command-line", "devtools",
+    "git-workflow", "commit", "github", "python-cli", "terminal",
+    "git-push", "conventional-commits", "tui"
+]
 requires-python = ">=3.8"
 dependencies = [
     "click>=8.0.0",
