@@ -8,7 +8,7 @@ setup(
     version="1.0.9",
     author="Himanshu Kumar",
     author_email="",
-    description="Git Made Easy - One Command To Rule Them All",
+    description="Git automation CLI — one command to add, commit, pull & push with smart commit messages, TUI, and GitHub repo creation",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/himanshu231204/gitpush",

@@ -1,4 +1,4 @@
-# RUN-GIT - Git Made Easy 🚀
+<div align="center">
 
 ```
 ╭━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╮
@@ -10,20 +10,8 @@
 ┃    ██║  ██║╚██████╔╝██║ ╚████║     ╚██████╔╝██║   ██║            ┃
 ┃    ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝      ╚═════╝ ╚═╝   ╚═╝            ┃
 ┃                                                                    ┃
-┃   ═══════════════════════════════════════════════════════════     ┃
-┃                                                                    ┃
-┃   ⚡ Git Operations Made Effortless                               ┃
-┃   🎯 One Command | Zero Hassle | Full Control                     ┃
-┃                                                                    ┃
-┃   ┌──────────────────────────────────────────────────────────┐   ┃
-┃   │  Developer    : Himanshu Kumar                           │   ┃
-┃   │  GitHub       : @himanshu231204                          │   ┃
-┃   │  Repository   : github.com/himanshu231204/gitpush        │   ┃
-┃   │  Version      : v1.0.9                                   │   ┃
-┃   │  License      : MIT                                      │   ┃
-┃   └──────────────────────────────────────────────────────────┘   ┃
-┃                                                                    ┃
-┃   Type 'run-git help' to get started                              ┃
+┃              ⚡ Git Operations Made Effortless ⚡                  ┃
+┃          One Command · Zero Hassle · Full Control                 ┃
 ┃                                                                    ┃
 ╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯
 ```
@@ -33,70 +21,54 @@
 [![Tests](https://github.com/himanshu231204/gitpush/workflows/Tests/badge.svg)](https://github.com/himanshu231204/gitpush/actions)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI - Status](https://img.shields.io/pypi/status/run-git)](https://pypi.org/project/run-git/)
+[![GitHub Stars](https://img.shields.io/github/stars/himanshu231204/gitpush)](https://github.com/himanshu231204/gitpush/stargazers)
 
-**One Command To Rule Them All**
+### Stop memorising Git commands. Start shipping code.
 
-RUN-GIT is the ultimate Git automation tool designed to make Git operations effortless for developers of all skill levels. Say goodbye to complex Git commands and hello to simplicity!
+**RUN-GIT** is a Python-powered CLI that wraps Git's most common workflows into a single, intuitive command — with auto commit messages, interactive menus, branch management, GitHub repo creation, and more. Perfect for students, hackathon builders, and any developer who wants to move fast without friction.
 
-Created by **Himanshu Kumar** ([@himanshu231204](https://github.com/himanshu231204))
+[📦 Install](#-installation) · [🚀 Quick Start](#-quick-start) · [📖 Commands](#-command-reference) · [🤝 Contribute](#-contributing)
+
+</div>
+
+---
+
+## ✨ Why RUN-GIT?
+
+Tired of typing four commands every time you want to save your work?
+
+```bash
+# The old way — every single time
+git add .
+git commit -m "update"
+git pull origin main
+git push origin main
+
+# The RUN-GIT way
+run-git push
+```
+
+That's it. One command does all four steps, auto-generates a meaningful commit message, handles conflicts, and pushes — safely.
 
 ---
 
 ## 🎯 Features
 
-- ⚡ **Quick Push**: One command to add, commit, pull, and push
-- 🤖 **Auto Commit Messages**: Intelligent commit message generation
-- 🔀 **Interactive Conflict Resolution**: Easy-to-use conflict handling
-- 🌿 **Branch Management**: Create, switch, delete, and merge branches effortlessly
-- 📊 **Beautiful Status Display**: Rich terminal UI with colors and tables
-- 🔐 **Sensitive File Detection**: Warns about .env, secrets, and credentials
-- 🎨 **Interactive Mode**: Full TUI menu for all operations
-- 🆕 **GitHub Repo Creation**: Create repositories from CLI or interactive menu
-- 📂 **Smart Folder Detection**: Automatically detects existing files and asks for confirmation
-- 🔄 **Existing Repo Support**: Connect existing local repos to GitHub
-- 🔧 **Intelligent Remote Management**: Handles existing remotes gracefully
-- 🚀 **Enhanced Push Reliability**: Fixed URL issues, token auth, auto-retry
+| Feature | Description |
+|---|---|
+| ⚡ **One-Command Push** | `run-git push` does add → commit → pull → push automatically |
+| 🤖 **Smart Commit Messages** | Auto-generates Conventional Commits style messages based on your changes |
+| 🎨 **Interactive TUI** | Full terminal menu — no flags to remember |
+| 🆕 **GitHub Repo Creator** | Create public/private repos from the CLI without leaving your terminal |
+| 🌿 **Branch Management** | Create, switch, merge, and delete branches with simple commands |
+| 🔐 **Secret File Guard** | Warns you before accidentally pushing `.env`, tokens, or credentials |
+| 🔀 **Conflict Helper** | Guided, interactive merge-conflict resolution |
+| 🔄 **Smart Sync** | Pull + push in one step, with auto-retry on failure |
+| 📊 **Rich Status View** | Colour-coded, table-based status output powered by Rich |
+| 🔧 **Remote Management** | Intelligently handles existing remotes and URL mismatches |
 
 ---
-
-🎯 Positioning
-Tool	   Purpose
-gh CLI	Power & flexibility
-RUN-GIT	Speed & simplicity
-
----
-💡 Use Cases
-
-🚀 Hackathons
-
-📚 Students / beginners
-
-⚡ Quick projects
-
-🔁 Daily commits
-
-🧪 Prototyping
-
----
-⚔️ Why Not Just Scripts?
-
-Yes, you can write aliases or scripts.
-
-But RUN-GIT provides:
-
-✅ Zero setup
-
-✅ Cross-platform support
-
-✅ Error handling
-
-✅ Interactive interface
-
-✅ Smart automation
-
----
-
-RUN-GIT is a “no-thinking layer” on top of Git, not a replacement for advanced tools.
 
 ## 📦 Installation
 
@@ -104,170 +76,136 @@ RUN-GIT is a “no-thinking layer” on top of Git, not a replacement for advanc
 pip install run-git
 ```
 
+Requires **Python 3.8+**. Works on macOS, Linux, and Windows.
+
+> First time? Set your GitHub token once with `run-git init` and you're ready to go.
+
 ---
 
 ## 🚀 Quick Start
 
-### 1. Initialize Repository
+### Push your changes (most common workflow)
 ```bash
-# New repository
-run-git init
-
-# Clone existing repository
-run-git init https://github.com/user/repo.git
+run-git push                        # auto commit message + push
+run-git push -m "feat: add login"   # custom commit message
 ```
 
-### 2. Quick Push (Most Common Use Case)
+### Launch the interactive menu
 ```bash
-# Add, commit, pull, and push in one command!
-run-git push
-
-# With custom commit message
-run-git push -m "Add new feature"
+run-git          # full TUI — no commands to memorise
 ```
 
-### 3. Interactive Mode
+### Create a new GitHub repository
 ```bash
-# Just type run-git for interactive menu
-run-git
+run-git new my-project                              # guided wizard
+run-git new my-project --quick                      # sensible defaults, no prompts
+run-git new my-api -d "REST API" --public -g Python -l MIT   # full control
 ```
 
-
-### 💡 Creating Repositories
-
-#### **Method 1: Interactive Menu** (Recommended)
-
+### Initialise a repository
 ```bash
-run-git
-```
-
-Select **"🆕 Create New Repo"**
-
-**Features:**
-- 📂 Shows existing files
-- 🔄 Handles existing repos
-- 🔗 Manages remotes
-- ✅ Confirms every step
-
-#### **Method 2: CLI Quick Mode**
-```bash
-run-git new my-project --quick
-```
-
-#### **Method 3: CLI Interactive**
-```bash
-run-git new my-project
-```
-
-#### **Method 4: Full Command**
-```bash
-run-git new my-api -d "REST API" --public -g Python -l MIT
+run-git init                                    # new local repo
+run-git init https://github.com/user/repo.git  # clone existing repo
 ```
 
 ---
 
-## 📖 Usage
+## 📖 Command Reference
 
-### Basic Commands
-
-```bash
-# Push changes
-run-git push
-
-# View status
-run-git status
-
-# View commit history
-run-git log
-
-# Branch operations
-run-git branch              # List branches
-run-git branch feature-x    # Create branch
-run-git switch main         # Switch branch
-run-git merge feature-x     # Merge branch
-
-# Remote management
-run-git remote              # Show remotes
-
-# Advanced
-run-git pull                # Pull changes
-run-git sync                # Pull + Push
-run-git stash               # Stash changes
-run-git undo                # Undo last commit
-```
+| Command | Description |
+|---------|-------------|
+| `run-git` | Open the interactive TUI menu |
+| `run-git push` | Add, commit, pull, and push in one step |
+| `run-git push -m "<msg>"` | Push with a custom commit message |
+| `run-git new <name>` | Create a new GitHub repository |
+| `run-git init` | Initialise a local or cloned repository |
+| `run-git status` | Rich colour-coded repository status |
+| `run-git log` | Formatted commit history |
+| `run-git branch` | List all branches |
+| `run-git branch <name>` | Create a new branch |
+| `run-git switch <name>` | Switch to a branch |
+| `run-git merge <name>` | Merge a branch into the current one |
+| `run-git pull` | Pull latest changes |
+| `run-git sync` | Pull then push (keep in sync) |
+| `run-git remote` | Show configured remotes |
+| `run-git stash` | Stash uncommitted changes |
+| `run-git undo` | Undo the last commit (keeps changes staged) |
+| `run-git --version` | Show installed version |
+| `run-git --help` | Show help for any command |
 
 ---
 
 ## 🤖 Auto Commit Messages
 
-RUN-GIT generates intelligent commit messages:
+RUN-GIT analyses your staged changes and generates [Conventional Commits](https://www.conventionalcommits.org/) style messages automatically:
 
-- `feat: add authentication module (3 added)`
-- `fix: update user validation (2 modified)`
-- `docs: update README (1 modified)`
-- `refactor: remove deprecated code (2 deleted)`
+```
+feat: add authentication module (3 files added)
+fix: update user validation logic (2 files modified)
+docs: update README and contributing guide (1 file modified)
+refactor: remove deprecated helper functions (2 files deleted)
+```
 
----
-
-## 📚 Command Reference
-
-| Command | Description |
-|---------|-------------|
-| `run-git` | Interactive mode with Create Repo |
-| `run-git push` | Quick push (add, commit, pull, push) |
-| `run-git new <n>` | Create new GitHub repository |
-| `run-git init` | Initialize repository |
-| `run-git status` | Show repository status |
-| `run-git log` | Show commit history |
-| `run-git branch` | List branches |
-| `run-git switch <n>` | Switch branch |
-| `run-git merge <n>` | Merge branch |
-| `run-git remote` | Show remotes |
-| `run-git pull` | Pull changes |
-| `run-git sync` | Pull and push |
-| `run-git stash` | Stash changes |
-| `run-git undo` | Undo last commit |
-| `run-git --help` | Show help |
-| `run-git --version` | Show version |
+No more `git commit -m "stuff"` or `git commit -m "fix"`.
 
 ---
 
+## 🆚 How Does It Compare?
+
+| | Raw Git | GitHub CLI (`gh`) | **RUN-GIT** |
+|---|---|---|---|
+| Push in one command | ❌ | ❌ | ✅ |
+| Auto commit messages | ❌ | ❌ | ✅ |
+| Interactive TUI menu | ❌ | Partial | ✅ |
+| Create GitHub repos | ❌ | ✅ | ✅ |
+| Secret file warnings | ❌ | ❌ | ✅ |
+| Learning curve | High | Medium | **Zero** |
+
+> RUN-GIT is a *speed layer* on top of Git — not a replacement. Use it for daily work; reach for `git` or `gh` when you need fine-grained control.
+
+---
+
+## 💡 Who Is It For?
+
+- 🎓 **Students & beginners** learning Git without drowning in flags
+- 🚀 **Hackathon builders** who need to ship fast
+- ⚡ **Indie developers** doing solo projects with quick iteration cycles
+- 🔁 **Any developer** who runs the same four Git commands dozens of times a day
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+Contributions, bug reports, and feature requests are all welcome!
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+
+```bash
+git clone https://github.com/himanshu231204/gitpush.git
+cd gitpush
+pip install -e ".[test]"
+pytest
+```
 
 ---
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Distributed under the **MIT License** — see [LICENSE](LICENSE) for details.
 
 ---
 
 ## 👨‍💻 Author
 
-**Himanshu Kumar**
-- GitHub: [@himanshu231204](https://github.com/himanshu231204)
-- Created with ❤️ for the developer community
+**Himanshu Kumar** — [@himanshu231204](https://github.com/himanshu231204)
+
+Built with ❤️ to make every developer's Git life a little simpler.
 
 ---
 
-## 🌟 Show Your Support
+<div align="center">
 
-If you find RUN-GIT helpful, please:
-- ⭐ Star the repository
-- 🐛 Report bugs
-- 💡 Suggest new features
-- 🔀 Contribute code
+**If RUN-GIT saves you time, please consider giving it a ⭐ — it helps others find the project!**
 
----
+[![Star History Chart](https://api.star-history.com/svg?repos=himanshu231204/gitpush&type=Date)](https://star-history.com/#himanshu231204/gitpush&Date)
 
-
-
-
----
-
-**Made with ❤️ by Himanshu Kumar | Making Git Easy for Everyone**
+</div>
