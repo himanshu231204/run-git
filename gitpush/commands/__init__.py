@@ -8,6 +8,7 @@ from gitpush.commands.branch import branch, switch, merge
 from gitpush.commands.remote import remote, pull, sync
 from gitpush.commands.stash import stash, undo
 from gitpush.commands.github import new
+from gitpush.commands.theme import theme
 
 __all__ = [
     'push',
@@ -23,4 +24,5 @@ __all__ = [
     'stash',
     'undo',
     'new',
+    'theme',
 ]
