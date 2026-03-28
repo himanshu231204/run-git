@@ -2,7 +2,11 @@
 Intelligent commit message generator
 """
 import os
+import logging
 from datetime import datetime
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 class CommitGenerator:
@@ -43,7 +47,8 @@ class CommitGenerator:
             }
             
             return status
-        except:
+        except Exception as e:
+            logger.error(f"Failed to get file changes: {e}")
             return {'added': [], 'modified': [], 'deleted': [], 'all': []}
     
     def _analyze_changes(self, status):

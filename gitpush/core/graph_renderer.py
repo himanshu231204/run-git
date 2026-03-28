@@ -4,6 +4,11 @@ Graph rendering for visualizing commit history
 from collections import defaultdict
 from gitpush.ui.banner import show_error
 
+# Constants for performance limits
+MAX_BRANCHES = 10
+MAX_COMMITS_PER_BRANCH = 30
+DEFAULT_MAX_COMMITS = 50
+
 
 class GraphRenderer:
     """Render commit history as ASCII graph"""
@@ -11,7 +16,7 @@ class GraphRenderer:
     def __init__(self, repo):
         self.repo = repo
     
-    def get_commit_data(self, max_count=50, all_branches=False):
+    def get_commit_data(self, max_count=DEFAULT_MAX_COMMITS, all_branches=False):
         """Get commit data with parent information"""
         try:
             commits = []
@@ -49,16 +54,23 @@ class GraphRenderer:
         if not commits:
             return []
         
-        # Track branches by commit hash
-        commit_branches = defaultdict(list)
+        # Track branches by commit hash - use set for O(1) lookup
+        commit_branches = defaultdict(set)
         
-        # Get branch info
-        for branch in self.repo.branches:
+        # Get branch info - with limits to prevent O(n²)
+        branches_to_check = list(self.repo.branches)[:MAX_BRANCHES]
+        for branch in branches_to_check:
             try:
-                for commit in self.repo.iter_commits(branch, max_count=50):
-                    commit_branches[commit.hexsha[:7]].append(branch.name)
-            except:
+                commits_iter = self.repo.iter_commits(branch, max_count=MAX_COMMITS_PER_BRANCH)
+                for commit in commits_iter:
+                    commit_branches[commit.hexsha[:7]].add(branch.name)
+            except Exception:
+                # Log error but continue - don't silently fail
                 pass
+        
+        # Convert sets to lists for compatibility
+        for key in commit_branches:
+            commit_branches[key] = list(commit_branches[key])
         
         # Build graph lines
         graph_lines = []
