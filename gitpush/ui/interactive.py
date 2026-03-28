@@ -43,7 +43,7 @@ class InteractiveUI:
                     "📊 Status/History     [s] - View status & logs",
                     "🌳 Commit Graph       [g] - Visual commit tree & diff",
                     "🔄 Sync              [y] - Pull & push",
-                    "⚙️  Settings          [g] - Configuration",
+                    "⚙️  Settings          [s] - Configuration",
                     "🔧 Advanced Tools     [a] - Stash, undo, etc.",
                     "📚 Help & Docs        [h] - Keyboard shortcuts",
                     "[red]❌ Exit           [q] - Quit application[/red]",
