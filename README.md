@@ -23,12 +23,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI - Status](https://img.shields.io/pypi/status/run-git)](https://pypi.org/project/run-git/)
 [![GitHub Stars](https://img.shields.io/github/stars/himanshu231204/gitpush)](https://github.com/himanshu231204/gitpush/stargazers)
+[![GitHub Release](https://img.shields.io/github/v/release/himanshu231204/gitpush)](https://github.com/himanshu231204/gitpush/releases)
 
 ### Stop memorising Git commands. Start shipping code.
 
-**RUN-GIT** is a Python-powered CLI that wraps Git's most common workflows into a single, intuitive command — with auto commit messages, interactive menus, branch management, GitHub repo creation, and more. Perfect for students, hackathon builders, and any developer who wants to move fast without friction.
+**RUN-GIT** is a Python-powered CLI that wraps Git's most common workflows into a single, intuitive command — with auto commit messages, interactive menus, branch management, GitHub repo creation, and more.
 
-[📦 Install](#-installation) · [🚀 Quick Start](#-quick-start) · [📖 Commands](#-command-reference) · [🤝 Contribute](#-contributing)
+[📦 Install](#-installation) · [🚀 Quick Start](#-quick-start) · [📖 Commands](#-command-reference) · [🏗️ Architecture](#-architecture)
 
 </div>
 
@@ -87,7 +88,7 @@ Requires **Python 3.8+**. Works on macOS, Linux, and Windows.
 ### Push your changes (most common workflow)
 ```bash
 run-git push                        # auto commit message + push
-run-git push -m "feat: add login"   # custom commit message
+run-git push -m "feat: add login"  # custom commit message
 ```
 
 ### Launch the interactive menu
@@ -135,6 +136,47 @@ run-git init https://github.com/user/repo.git  # clone existing repo
 
 ---
 
+## 🏗️ Architecture
+
+RUN-GIT v1.1.0+ features a modular, maintainable architecture:
+
+```
+gitpush/
+├── cli.py                    # Main CLI entry point (59 lines)
+├── commands/                 # Modular command handlers
+│   ├── push.py              # Push command
+│   ├── init.py              # Init command
+│   ├── status.py            # Status & log commands
+│   ├── branch.py            # Branch operations
+│   ├── remote.py            # Remote management
+│   ├── stash.py             # Stash operations
+│   └── github.py            # GitHub integration
+├── core/                    # Business logic
+│   ├── git_operations.py    # Git operations
+│   ├── commit_generator.py  # Auto commit messages
+│   ├── conflict_resolver.py # Merge conflict handling
+│   └── github_manager.py    # GitHub API
+├── ui/                      # Terminal UI
+│   ├── banner.py            # Banner & messages
+│   └── interactive.py       # Interactive menus
+├── utils/                   # Utilities
+│   ├── validators.py         # Input validation
+│   ├── formatters.py        # Output formatting
+│   └── file_helpers.py     # File operations
+├── config/                  # Configuration
+│   └── settings.py          # Settings management
+└── exceptions.py            # Custom exceptions
+```
+
+### Benefits
+
+- **Maintainable**: Each command is isolated in its own module
+- **Testable**: Unit test each component independently
+- **Extensible**: Add new commands easily
+- **Clean Code**: Reusable utilities and proper error handling
+
+---
+
 ## 🤖 Auto Commit Messages
 
 RUN-GIT analyses your staged changes and generates [Conventional Commits](https://www.conventionalcommits.org/) style messages automatically:
@@ -177,12 +219,16 @@ No more `git commit -m "stuff"` or `git commit -m "fix"`.
 ## 🤝 Contributing
 
 Contributions, bug reports, and feature requests are all welcome!
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
 ```bash
+# Clone and setup
 git clone https://github.com/himanshu231204/gitpush.git
 cd gitpush
+
+# Install in development mode
 pip install -e ".[test]"
+
+# Run tests
 pytest
 ```
 
