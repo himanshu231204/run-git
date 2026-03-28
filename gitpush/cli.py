@@ -20,6 +20,7 @@ from gitpush.commands import (
     undo,
     new,
     theme,
+    graph,
 )
 
 
@@ -54,6 +55,7 @@ main.add_command(stash)
 main.add_command(undo)
 main.add_command(new)
 main.add_command(theme)
+main.add_command(graph)
 
 
 if __name__ == '__main__':

@@ -9,6 +9,7 @@ from gitpush.commands.remote import remote, pull, sync
 from gitpush.commands.stash import stash, undo
 from gitpush.commands.github import new
 from gitpush.commands.theme import theme
+from gitpush.commands.graph import graph
 
 __all__ = [
     'push',
@@ -25,4 +26,5 @@ __all__ = [
     'undo',
     'new',
     'theme',
+    'graph',
 ]
