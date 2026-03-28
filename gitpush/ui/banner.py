@@ -2,10 +2,14 @@
 Banner and UI elements for run-git
 """
 import sys
+import time
+import threading
 from rich.console import Console
 from rich.theme import Theme
 from rich.style import Style
 from rich import box
+from rich.text import Text
+from rich.panel import Panel
 from gitpush import __version__
 
 # Custom theme
@@ -69,30 +73,70 @@ def set_theme(theme_name):
     current_theme = ThemeManager(theme_name)
 
 
-def get_banner(version=None):
+# Git Logo
+GIT_LOGO = """
+██████╗ ██╗   ██╗███╗   ██╗      ██████╗ ██╗████████╗
+██╔══██╗██║   ██║████╗  ██║     ██╔════╝ ██║╚══██╔══╝
+██████╔╝██║   ██║██╔██╗ ██║     ██║  ███╗██║   ██║   
+██╔══██╗██║   ██║██║╚██╗██║     ██║   ██║██║   ██║   
+██║  ██║╚██████╔╝██║ ╚████║     ╚██████╔╝██║   ██║   
+╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝      ╚═════╝ ╚═╝   ╚═╝   
+"""
+
+# Animated RUN-GIT text
+RUN_GIT_TEXT = [
+    ["⚡ RUN-GIT ⚡", "cyan"],
+    ["⚡ RUN-GIT ⚡", "magenta"],
+    ["⚡ RUN-GIT ⚡", "green"],
+    ["⚡ RUN-GIT ⚡", "yellow"],
+    ["⚡ RUN-GIT ⚡", "cyan"],
+]
+
+# Subtitle
+SUBTITLE = "Git Operations, Simplified"
+
+# Tagline
+TAGLINE = "One Command • Zero Hassle • Full Control"
+
+
+def get_banner(version=None, animated=False):
     """Get professional banner"""
     ver = version or __version__
     return f"""
-╭──────────────────────────────────────────────────────────────────────╮
-│                                                                      │
-│   ██████╗ ██╗   ██╗███╗   ██╗      ██████╗ ██╗████████╗              │
-│   ██╔══██╗██║   ██║████╗  ██║     ██╔════╝ ██║╚══██╔══╝              │
-│   ██████╔╝██║   ██║██╔██╗ ██║     ██║  ███╗██║   ██║                 │
-│   ██╔═══╝ ██║   ██║██║╚██╗██║     ██║   ██║██║   ██║                 │
-│   ██║     ╚██████╔╝██║ ╚████║     ╚██████╔╝██║   ██║                 │
-│   ╚═╝      ╚═════╝ ╚═╝  ╚═══╝      ╚═════╝ ╚═╝   ╚═╝                 │
-│                                                                      │
-│           ⚡ Git Operations, Simplified ⚡                            │
-│                                                                      │
-│        One Command  •  Zero Hassle  •  Full Control                  │
-│                                                                      │
-╰──────────────────────────────────────────────────────────────────────╯
+{GIT_LOGO}
+        [bold cyan]⚡ RUN-GIT ⚡[/bold cyan]
+   [bold]Git Operations, Simplified[/bold]
+
+ [dim]One Command • Zero Hassle • Full Control[/dim]
 """
 
 
 def show_banner():
-    """Display the run-git banner"""
-    console.print(get_banner(), style=f"bold {current_theme.colors['primary']}")
+    """Display the run-git banner with animation"""
+    # Show Git logo
+    console.print(f"[bold cyan]{GIT_LOGO}[/bold cyan]")
+    
+    # Animated RUN-GIT text
+    for text, color in RUN_GIT_TEXT:
+        console.clear()
+        console.print(f"[bold cyan]{GIT_LOGO}[/bold cyan]")
+        console.print(f"\n        [bold {color}]{text}[/bold {color}]")
+        console.print(f"   [bold]Git Operations, Simplified[/bold]\n")
+        console.print(f" [dim]{TAGLINE}[/dim]")
+        time.sleep(0.15)
+    
+    # Final banner (stays on screen)
+    console.print(f"\n        [bold cyan]⚡ RUN-GIT ⚡[/bold cyan]")
+    console.print(f"   [bold]Git Operations, Simplified[/bold]\n")
+    console.print(f" [dim]{TAGLINE}[/dim]")
+
+
+def show_banner_simple():
+    """Display simple non-animated banner"""
+    console.print(f"[bold cyan]{GIT_LOGO}[/bold cyan]")
+    console.print(f"\n        [bold cyan]⚡ RUN-GIT ⚡[/bold cyan]")
+    console.print(f"   [bold]Git Operations, Simplified[/bold]\n")
+    console.print(f" [dim]{TAGLINE}[/dim]")
 
 
 def show_success(message):
