@@ -6,11 +6,15 @@ Production-ready version (no push conflicts)
 
 import os
 import yaml
+import logging
 import requests
 from pathlib import Path
 from github import Github, GithubException
 import questionary
 from gitpush.ui.banner import show_success, show_error, show_warning, show_info, show_progress
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 class GitHubManager:
@@ -58,8 +62,8 @@ class GitHubManager:
                 user = self.github.get_user()
                 _ = user.login
                 return True
-            except:
-                show_warning("Invalid saved token")
+            except Exception as e:
+                logger.warning(f"Invalid saved token: {e}")
                 self.token = None
 
         show_info("\nGitHub Token required")
@@ -111,7 +115,7 @@ class GitHubManager:
         try:
             self.github.get_user().get_repo(name)
             return True
-        except:
+        except Exception:
             return False
 
     def suggest_repo_name(self, base):

@@ -1,19 +1,34 @@
 """
 Core Git operations for gitpush
 """
+from __future__ import annotations
 import os
+import re
+from typing import Optional, Dict, List, Any
 import git
 from git.exc import GitCommandError, InvalidGitRepositoryError
 from gitpush.ui.banner import show_success, show_error, show_warning, show_info, show_progress
 
 
+# Constants
+VALID_BRANCH_PATTERN = re.compile(r'^[a-zA-Z0-9._\-/]+$')
+MAX_BRANCH_NAME_LENGTH = 100
+
+
 class GitOperations:
     """Handle all git operations"""
     
-    def __init__(self, path="."):
+    def __init__(self, path: str = "."):
         self.path = path
-        self.repo = None
+        self.repo: Optional[git.Repo] = None
         self._initialize_repo()
+    
+    @staticmethod
+    def validate_branch_name(branch_name: str) -> bool:
+        """Validate branch name to prevent command injection"""
+        if not branch_name or len(branch_name) > MAX_BRANCH_NAME_LENGTH:
+            return False
+        return bool(VALID_BRANCH_PATTERN.match(branch_name))
     
     def _initialize_repo(self):
         """Initialize git repository"""
@@ -22,11 +37,11 @@ class GitOperations:
         except InvalidGitRepositoryError:
             self.repo = None
     
-    def is_git_repo(self):
+    def is_git_repo(self) -> bool:
         """Check if current directory is a git repository"""
         return self.repo is not None
     
-    def init_repo(self, remote_url=None):
+    def init_repo(self, remote_url: Optional[str] = None) -> bool:
         """Initialize a new git repository"""
         try:
             if self.is_git_repo():
@@ -194,6 +209,11 @@ class GitOperations:
                 show_error("Not a git repository")
                 return False
             
+            # Validate branch name
+            if not self.validate_branch_name(branch_name):
+                show_error(f"Invalid branch name: '{branch_name}'")
+                return False
+            
             show_progress(f"Creating branch '{branch_name}'...")
             self.repo.create_head(branch_name)
             show_success(f"Branch '{branch_name}' created")
@@ -209,6 +229,11 @@ class GitOperations:
                 show_error("Not a git repository")
                 return False
             
+            # Validate branch name
+            if not self.validate_branch_name(branch_name):
+                show_error(f"Invalid branch name: '{branch_name}'")
+                return False
+            
             show_progress(f"Switching to branch '{branch_name}'...")
             self.repo.git.checkout(branch_name)
             show_success(f"Switched to branch '{branch_name}'")
@@ -222,6 +247,11 @@ class GitOperations:
         try:
             if not self.is_git_repo():
                 show_error("Not a git repository")
+                return False
+            
+            # Validate branch name
+            if not self.validate_branch_name(branch_name):
+                show_error(f"Invalid branch name: '{branch_name}'")
                 return False
             
             current_branch = self.repo.active_branch.name
