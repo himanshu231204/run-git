@@ -222,6 +222,7 @@ KEYBOARD_SHORTCUTS = {
     'r': 'Refresh',
     'p': 'Quick push',
     's': 'Status',
+    'g': 'Commit graph',
     'b': 'Branch menu',
     'c': 'Cancel',
     'enter': 'Confirm',

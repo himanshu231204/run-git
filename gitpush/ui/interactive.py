@@ -41,6 +41,7 @@ class InteractiveUI:
                     "📥 Clone Repo         [c] - Clone existing repository",
                     "🌿 Branch Ops         [b] - Branch management",
                     "📊 Status/History     [s] - View status & logs",
+                    "🌳 Commit Graph       [g] - Visual commit tree & diff",
                     "🔄 Sync              [y] - Pull & push",
                     "⚙️  Settings          [g] - Configuration",
                     "🔧 Advanced Tools     [a] - Stash, undo, etc.",
@@ -122,7 +123,10 @@ class InteractiveUI:
                 if show_log:
                     commits = git_ops.get_log(max_count=10)
                     InteractiveUI.show_log_table(commits)
-                    
+            
+            elif 'Commit Graph' in choice or 'Graph' in choice:
+                InteractiveUI.graph_menu()
+                
             elif 'Sync' in choice:
                 from gitpush.core.git_operations import GitOperations
                 from gitpush.ui.banner import show_info
@@ -314,6 +318,77 @@ class InteractiveUI:
         elif 'Logs' in choice:
             commits = git_ops.get_log(max_count=20)
             InteractiveUI.show_log_table(commits)
+    
+    @staticmethod
+    def graph_menu():
+        """Show graph/visualization menu"""
+        while True:
+            panel = Panel(
+                "[bold]Commit Graph[/bold]\n"
+                "[dim]Visualize your commit history[/dim]",
+                title="[bold]🌳 COMMIT GRAPH[/bold]",
+                border_style="cyan",
+                box=box.ROUNDED
+            )
+            console.print(panel)
+            
+            choice = questionary.select(
+                "",
+                choices=[
+                    "📊 Table View        - Show commits in table format",
+                    "🌳 ASCII Graph       - Show branch visualization",
+                    "🌿 Branch Tree       - Show branch overview",
+                    "🔍 View Details      - Select commit to view details",
+                    "⬅️  Back           - Return to main menu",
+                ],
+                qmark="➜",
+                pointer="►"
+            ).ask()
+            
+            if not choice or 'Back' in choice:
+                break
+            
+            from gitpush.core.git_operations import GitOperations
+            from gitpush.core.graph_renderer import GraphRenderer
+            from gitpush.commands.graph import get_commit_details, display_commit_details
+            from click.testing import CliRunner
+            
+            git_ops = GitOperations()
+            renderer = GraphRenderer(git_ops.repo)
+            
+            if 'Table' in choice:
+                # Show default table view
+                commits = git_ops.get_log(max_count=15)
+                InteractiveUI.show_log_table(commits)
+                
+            elif 'ASCII' in choice or 'Graph' in choice:
+                runner = CliRunner()
+                result = runner.invoke(
+                    __import__('gitpush.commands.graph', fromlist=['graph']).graph,
+                    ['--graph', '--max', '10']
+                )
+                console.print(result.output)
+                
+            elif 'Branch Tree' in choice:
+                tree_output = renderer.get_branch_tree()
+                console.print(tree_output)
+                
+            elif 'Details' in choice:
+                # Show interactive commit selection
+                commits = git_ops.get_log(max_count=10)
+                if commits:
+                    console.print("\n[bold]Select a commit to view details:[/bold]\n")
+                    for i, c in enumerate(commits):
+                        console.print(f"  [{i+1}] {c['hash']} | {c['message'][:50]}")
+                    
+                    selected = questionary.text("Enter commit number:").ask()
+                    if selected and selected.isdigit():
+                        idx = int(selected) - 1
+                        if 0 <= idx < len(commits):
+                            commit_hash = commits[idx]['hash']
+                            details = get_commit_details(git_ops, renderer, commit_hash, show_diff=True)
+                            if details:
+                                display_commit_details(details)
     
     @staticmethod
     def get_commit_message():

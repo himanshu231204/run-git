@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+[1.2.0] - 2026-03-29
+
+### 🌳 New Features - Commit Graph Visualization
+
+* **Graph Command** - New `run-git graph` command for visualizing commit history
+* **ASCII Graph** - Branch visualization with lines using `--graph` flag
+* **File Diff View** - See changed files with +/- counts using `--diff` flag
+* **Interactive Mode** - Select commits to view details with `-i` flag
+* **Specific Commit** - View any commit with `--commit <hash>`
+* **Branch Tree** - Overview of all branches with `--tree` flag
+
+### 🎨 UI Enhancements
+
+* **New Menu Option** - Commit Graph option in interactive menu
+* **Updated Shortcuts** - Added 'g' keyboard shortcut for graph
+
+### 📝 Commands Added
+
+```bash
+run-git graph              # Table view (default)
+run-git graph --graph      # ASCII graph with branch lines
+run-git graph --simple     # Simple text output
+run-git graph --tree       # Branch tree overview
+run-git graph -i           # Interactive commit selection
+run-git graph --commit <hash>    # View specific commit
+run-git graph --commit <hash> --diff  # View commit with file changes
+```
+
+---
+
 [1.1.2] - 2026-03-29
 
 ### 🐛 Bug Fixes
