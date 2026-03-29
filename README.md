@@ -69,6 +69,8 @@ That's it. One command does all four steps, auto-generates a meaningful commit m
 | 🔄 **Smart Sync** | Pull + push in one step, with auto-retry on failure |
 | 📊 **Rich Status View** | Colour-coded, table-based status output powered by Rich |
 | 🔧 **Remote Management** | Intelligently handles existing remotes and URL mismatches |
+| 🔐 **PRO Feature Gating** | Tiered access (FREE/PRO) with usage limits and config commands |
+| 🤖 **Multi-Provider AI** | Support for Local, OpenAI, Anthropic, Google, Grok providers |
 
 ---
 
@@ -113,6 +115,16 @@ run-git new my-api -d "REST API" --public -g Python -l MIT   # full control
 ```bash
 run-git init                                    # new local repo
 run-git init https://github.com/user/repo.git  # clone existing repo
+
+### Set your PRO API key
+```bash
+run-git config set-api-key rg_your_key_here
+```
+
+### Use a specific AI provider (e.g., Google Gemini)
+```bash
+RUN_GIT_AI_PROVIDER=google GOOGLE_API_KEY=your_google_key run-git commit-ai
+```
 ```
 
 ---
