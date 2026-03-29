@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="run-git",
-    version="1.2.0",
+    version="1.3.0",
     author="Himanshu Kumar",
     author_email="",
     description="Git automation CLI — one command to add, commit, pull & push with smart commit messages, TUI, and GitHub repo creation",

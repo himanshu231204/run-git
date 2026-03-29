@@ -182,7 +182,7 @@ class TestCLI(unittest.TestCase):
         """Test version import"""
         from gitpush import __version__
         self.assertIsNotNone(__version__)
-        self.assertEqual(__version__, "1.2.0")
+        self.assertEqual(__version__, "1.3.0")
 
 
 if __name__ == '__main__':

@@ -2,21 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-[1.2.0] - 2026-03-30
-
-### 🌳 New Features - Commit Graph Visualization
-
-* **Graph Command** - New `run-git graph` command for visualizing commit history
-* **ASCII Graph** - Branch visualization with lines using `--graph` flag
-* **File Diff View** - See changed files with +/- counts using `--diff` flag
-* **Interactive Mode** - Select commits to view details with `-i` flag
-* **Specific Commit** - View any commit with `--commit <hash>`
-* **Branch Tree** - Overview of all branches with `--tree` flag
-
-### 🎨 UI Enhancements
-
-* **New Menu Option** - Commit Graph option in interactive menu
-* **Updated Shortcuts** - Added 'g' keyboard shortcut for graph
+[1.3.0] - 2026-03-30
 
 ### 🔐 PRO Feature Gating System
 
@@ -44,9 +30,40 @@ All notable changes to this project will be documented in this file.
   * Per-command override with environment variables
 * **Automatic Provider Selection**: Based on configuration with fallbacks
 
+### 🌳 New Features - Commit Graph Visualization (from 1.2.0)
+
+* **Graph Command** - New `run-git graph` command for visualizing commit history
+* **ASCII Graph** - Branch visualization with lines using `--graph` flag
+* **File Diff View** - See changed files with +/- counts using `--diff` flag
+* **Interactive Mode** - Select commits to view details with `-i` flag
+* **Specific Commit** - View any commit with `--commit <hash>`
+* **Branch Tree** - Overview of all branches with `--tree` flag
+
+### 🎨 UI Enhancements (from 1.2.0)
+
+* **New Menu Option** - Commit Graph option in interactive menu
+* **Updated Shortcuts** - Added 'g' keyboard shortcut for graph
+
 ### 📦 Other Improvements
 
 * All 36 tests pass
 * Backward compatible
 * Windows-compatible Unicode handling
 * Clean separation of concerns
+
+[1.2.0] - 2026-03-29
+
+### 🌳 New Features - Commit Graph Visualization
+
+* **Graph Command** - New `run-git graph` command for visualizing commit history
+* **ASCII Graph** - Branch visualization with lines using `--graph` flag
+* **File Diff View** - See changed files with +/- counts using `--diff` flag
+* **Interactive Mode** - Select commits to view details with `-i` flag
+* **Specific Commit** - View any commit with `--commit <hash>`
+* **Branch Tree** - Overview of all branches with `--tree` flag
+
+### 🎨 UI Enhancements
+
+* **New Menu Option** - Commit Graph option in interactive menu
+* **Updated Shortcuts** - Added 'g' keyboard shortcut for graph
+
