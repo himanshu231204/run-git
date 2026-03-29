@@ -25,6 +25,7 @@ from gitpush.commands import (
     pr_ai,
     review_ai,
     ai_command,
+    config_cmd,
 )
 
 
@@ -64,6 +65,7 @@ main.add_command(commit_ai)
 main.add_command(pr_ai)
 main.add_command(review_ai)
 main.add_command(ai_command)
+main.add_command(config_cmd)
 
 
 if __name__ == '__main__':

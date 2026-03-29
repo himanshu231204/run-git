@@ -6,6 +6,7 @@ from gitpush.ai.config import AIConfig
 from gitpush.core.ai_engine import AIEngine
 from gitpush.core.git_operations import GitOperations
 from gitpush.ui.banner import show_error, show_info, show_success
+from gitpush.utils.license import check_feature_access
 
 
 @click.command(name="pr-ai")
@@ -14,6 +15,10 @@ from gitpush.ui.banner import show_error, show_info, show_success
 @click.option("--commits", "commit_limit", default=None, type=int, help="Number of recent commits")
 def pr_ai(base_branch: str, head_ref: str, commit_limit: int) -> None:
     """Generate structured PR description from branch diff."""
+
+    remaining = check_feature_access("pr-ai")
+    if remaining < 0:
+        return
 
     git_ops = GitOperations()
     if not git_ops.is_git_repo():
@@ -39,3 +44,6 @@ def pr_ai(base_branch: str, head_ref: str, commit_limit: int) -> None:
     show_success("AI PR description generated")
     show_info(f"Diff: {resolved_base}...{head_ref}")
     click.echo(description)
+
+    if remaining >= 0:
+        show_info(f"Free uses remaining today: {remaining}")

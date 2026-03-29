@@ -1,10 +1,11 @@
 """Factory for creating AI providers."""
-
 from __future__ import annotations
 
 from gitpush.ai.config import AIConfig
 from gitpush.ai.providers.anthropic import AnthropicProvider
 from gitpush.ai.providers.base import BaseAIProvider
+from gitpush.ai.providers.google import GoogleProvider
+from gitpush.ai.providers.grok import GrokProvider
 from gitpush.ai.providers.local import LocalAIProvider
 from gitpush.ai.providers.openai import OpenAIProvider
 from gitpush.exceptions import AIConfigurationError
@@ -37,6 +38,26 @@ class AIProviderFactory:
                 timeout=config.request_timeout,
             )
 
+        if provider == "google":
+            if not config.google_api_key:
+                raise AIConfigurationError("GOOGLE_API_KEY is required for Google provider")
+            return GoogleProvider(
+                api_key=config.google_api_key,
+                model=config.google_model,
+                base_url=config.google_base_url,
+                timeout=config.request_timeout,
+            )
+
+        if provider == "grok":
+            if not config.grok_api_key:
+                raise AIConfigurationError("GROK_API_KEY is required for Grok provider")
+            return GrokProvider(
+                api_key=config.grok_api_key,
+                model=config.grok_model,
+                base_url=config.grok_base_url,
+                timeout=config.request_timeout,
+            )
+
         if provider == "local":
             return LocalAIProvider(
                 model=config.local_model,
@@ -45,5 +66,5 @@ class AIProviderFactory:
             )
 
         raise AIConfigurationError(
-            "Unsupported provider. Use one of: openai, anthropic, local"
+            "Unsupported provider. Use one of: openai, anthropic, google, grok, local"
         )

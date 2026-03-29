@@ -22,7 +22,7 @@ custom_theme = Theme({
     "dim": "dim",
 })
 
-console = Console(theme=custom_theme)
+console = Console(theme=custom_theme, legacy_windows=False, emoji=False)
 
 
 class ThemeManager:
@@ -118,27 +118,27 @@ def show_banner_with_version():
 
 def show_success(message):
     """Show success message"""
-    console.print(f"✓  {message}", style=f"bold {current_theme.colors['success']}")
+    console.print(f"[OK]  {message}", style=f"bold {current_theme.colors['success']}")
 
 
 def show_error(message):
     """Show error message"""
-    console.print(f"✗  {message}", style=f"bold {current_theme.colors['error']}")
+    console.print(f"[X]  {message}", style=f"bold {current_theme.colors['error']}")
 
 
 def show_warning(message):
     """Show warning message"""
-    console.print(f"⚠  {message}", style=f"bold {current_theme.colors['warning']}")
+    console.print(f"[!]  {message}", style=f"bold {current_theme.colors['warning']}")
 
 
 def show_info(message):
     """Show info message"""
-    console.print(f"ℹ  {message}", style=f"bold {current_theme.colors['primary']}")
+    console.print(f"[i]  {message}", style=f"bold {current_theme.colors['primary']}")
 
 
 def show_progress(message):
     """Show progress message"""
-    console.print(f"⟳ {message}", style=f"bold {current_theme.colors['accent']}")
+    console.print(f"[*] {message}", style=f"bold {current_theme.colors['accent']}")
 
 
 def show_step(step, total, message):
