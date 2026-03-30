@@ -70,7 +70,46 @@ That's it. One command does all four steps, auto-generates a meaningful commit m
 | 📊 **Rich Status View** | Colour-coded, table-based status output powered by Rich |
 | 🔧 **Remote Management** | Intelligently handles existing remotes and URL mismatches |
 | 🔐 **PRO Feature Gating** | Tiered access (FREE/PRO) with usage limits and config commands |
-| 🤖 **Multi-Provider AI** | Support for Local, OpenAI, Anthropic, Google, Grok providers |
+| 🤖 **AI Code Review** | Full diff or single-file AI-powered code review with detailed feedback |
+| 📝 **AI PR Descriptions** | Auto-generate PR descriptions from branch changes |
+| 💬 **AI Commit Messages** | AI-generated commit messages with context awareness |
+
+---
+
+## 🤖 AI Assistant (v1.3.0)
+
+Get AI-powered code reviews, PR descriptions, and commit messages directly from your terminal.
+
+### Features
+
+**Code Review** - Get detailed AI-powered code reviews:
+- **Full Review**: Review all changes in your diff
+- **Single File**: Review specific files without reviewing entire diff  
+- **Categories**: Bugs, Code Quality, Performance, Security, Best Practices
+
+**PR & Commit AI**:
+- Auto-generate PR descriptions from branch changes
+- AI commit messages with context awareness
+
+**50+ Supported Models**:
+
+| Provider | Example Models |
+|----------|---------------|
+| **OpenAI** | gpt-4o, o1, o3-mini |
+| **Anthropic** | claude-4-sonnet, claude-4-opus |
+| **Google** | gemini-2.0-flash, gemini-2.5-pro |
+| **Grok** | grok-2, grok-2-vision |
+| **Local** | llama3.3, qwen2.5, deepseek-r1 |
+
+**Configuration**:
+```bash
+# Via interactive menu
+run-git
+# Navigate to AI Assistant > Configure Provider
+
+# Via environment variables
+RUN_GIT_AI_PROVIDER=openai OPENAI_API_KEY=sk-... run-git commit-ai
+```
 
 ---
 
@@ -125,7 +164,6 @@ run-git config set-api-key rg_your_key_here
 ```bash
 RUN_GIT_AI_PROVIDER=google GOOGLE_API_KEY=your_google_key run-git commit-ai
 ```
-```
 
 ---
 
@@ -155,6 +193,10 @@ RUN_GIT_AI_PROVIDER=google GOOGLE_API_KEY=your_google_key run-git commit-ai
 | `run-git remote` | Show configured remotes |
 | `run-git stash` | Stash uncommitted changes |
 | `run-git undo` | Undo the last commit (keeps changes staged) |
+| `run-git commit-ai` | Generate AI commit message |
+| `run-git pr-ai` | Generate AI PR description |
+| `run-git review-ai` | Generate AI code review |
+| `run-git config` | Manage configuration (PRO, AI provider) |
 | `run-git --version` | Show installed version |
 | `run-git --help` | Show help for any command |
 
