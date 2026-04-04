@@ -1,155 +1,226 @@
-<!-- Context: project-intelligence/technical | Priority: high | Version: 1.2 | Updated: 2026-03-31 -->
+<!-- Context: project-intelligence/technical | Priority: critical | Version: 1.1 | Updated: 2026-04-05 -->
 
 # Technical Domain
 
-> Document the technical foundation, architecture, and key decisions for the gitpush CLI tool.
+> Document the technical foundation, architecture, and key decisions.
 
 ## Quick Reference
 
-- **Purpose**: Understand how the project works technically
+- **Purpose**: Understand how RUN-GIT works technically
 - **Update When**: New features, refactoring, tech stack changes
-- **Audience**: Developers, DevOps, technical stakeholders
+- **Audience**: Developers, contributors, AI agents
+
+---
 
 ## Primary Stack
 
 | Layer | Technology | Version | Rationale |
 |-------|-----------|---------|-----------|
-| Language | Python | 3.8+ | Cross-platform, widely available, good CLI support |
-| Framework | Click | Latest | Mature, well-documented, easy to compose command groups |
-| Database | None | N/A | CLI tool, no persistent data storage needed |
-| Infrastructure | Local execution | N/A | Runs on developer machines |
-| Key Libraries | rich, questionary, pytest, black, flake8 | Latest | Terminal UX, CLI interactivity, testing, code quality |
+| Language | Python | 3.8+ | Cross-platform, rich ecosystem |
+| CLI Framework | Click | 8.0+ | Simple, extensible command handling |
+| UI Library | Rich | 13.0+ | Beautiful terminal output |
+| Git Integration | GitPython | 3.1+ | Pure Python git operations |
+| Interactive Prompts | Questionary | 1.10+ | User-friendly prompts |
+| HTTP Requests | Requests | 2.28+ | API calls |
+| YAML Config | PyYAML | 6.0+ | Configuration management |
+| GitHub API | PyGithub | 1.59+ | GitHub integration |
+
+---
 
 ## Architecture Pattern
 
 ```
-Type: Monolith (CLI tool)
-Pattern: Modular command structure with separation of concerns
+Type: CLI Tool (Monolith)
+Pattern: Layered architecture with separation of concerns
+
+CLI Layer (cli.py) → Commands (commands/) → Core (core/) → Git/AI
 ```
 
 ### Why This Architecture?
 
-Simple CLI tool with clear separation: commands/ for CLI orchestration, core/ for business logic, ui/ for terminal rendering. Enables testable core logic without CLI dependencies.
+- **Separation of concerns**: Commands are thin orchestrators, core contains business logic
+- **Testability**: Core logic has no CLI dependencies, easy to unit test
+- **Extensibility**: New commands added as isolated modules
+- **AI Integration**: Dedicated AI layer with provider abstraction
+
+---
 
 ## Project Structure
 
 ```
 gitpush/
-├── cli.py                  # Top-level Click command group
-├── commands/               # Thin CLI orchestration layer
-├── core/                   # Business logic (Git ops, commit generation, rendering)
-├── ui/                     # Terminal UX (Rich, questionary)
-├── utils/                  # Reusable helpers/validators
-├── config/settings.py      # Config model + persistence
-├── exceptions.py           # Domain exceptions
-tests/                     # Automated tests
-.github/workflows/         # CI (tests.yml, quality.yml, publish.yml)
+├── cli.py                    # Main CLI entry (Click)
+├── commands/                 # Command handlers (thin orchestration)
+│   ├── push.py              # Push workflow
+│   ├── branch.py            # Branch operations
+│   ├── commit_ai.py          # AI commit messages
+│   ├── pr_ai.py             # AI PR descriptions
+│   ├── review_ai.py         # AI code review
+│   └── ...
+├── core/                     # Business logic (testable)
+│   ├── git_operations.py    # Git operations wrapper
+│   ├── commit_generator.py  # Auto message generation
+│   ├── conflict_resolver.py # Merge conflict handling
+│   ├── graph_renderer.py    # ASCII graph rendering
+│   └── ai_engine.py        # AI orchestration
+├── ai/                       # AI integration layer
+│   ├── client.py            # Unified AI client
+│   ├── factory.py           # Provider selector
+│   ├── config.py            # AI configuration
+│   ├── prompts/             # Prompt templates
+│   │   ├── commit_prompt.py
+│   │   ├── pr_prompt.py
+│   │   └── review_prompt.py
+│   └── providers/           # AI provider implementations
+│       ├── openai.py       # OpenAI GPT
+│       ├── anthropic.py    # Anthropic Claude
+│       ├── grok.py         # xAI Grok
+│       ├── google.py       # Google Gemini
+│       └── local.py       # Local Ollama/LM Studio
+├── ui/                       # Terminal UI (Rich)
+│   ├── banner.py           # ASCII banners
+│   └── interactive.py       # Interactive menus
+├── utils/                    # Utilities
+│   ├── validators.py       # Input validation
+│   ├── formatters.py       # Output formatting
+│   ├── diff_cleaner.py     # Git diff cleaning
+│   └── license.py          # License display
+├── config/                   # Configuration
+│   └── settings.py         # Settings management
+└── exceptions.py            # Custom exceptions
 ```
 
-**Key Directories**:
-- `cli.py` - Entry point, Click command group definition
-- `commands/` - Thin orchestration: parse args → call core → render output
-- `core/` - Testable business logic without CLI dependencies
-- `ui/` - Terminal rendering and user interaction (Rich, questionary)
-- `utils/` - Reusable helpers and validators
+---
 
 ## Key Technical Decisions
 
 | Decision | Rationale | Impact |
 |----------|-----------|--------|
-| Use Click for CLI framework | Mature, well-documented, easy to compose command groups | Clean command hierarchy, testable CLI logic |
-| Separate concerns (commands/, core/, ui/) | CLI orchestration separate from business logic | Testable core without CLI dependencies |
-| Type hints for public functions | Better IDE support, self-documenting code | Maintainable, clearer contracts |
+| Click over argparse | Better command grouping, help generation | Cleaner CLI code |
+| Rich for all output | Consistent terminal appearance | Beautiful UI |
+| GitPython for git ops | Pure Python, no external deps | Cross-platform |
+| AI provider abstraction | Support multiple AI backends | Flexibility |
+| Thin commands | Easy to test, maintain | Code quality |
+| YAML config | Human-readable, nested config | Easy configuration |
+
+---
 
 ## Integration Points
 
 | System | Purpose | Protocol | Direction |
 |--------|---------|----------|-----------|
-| Git executable | Execute git commands (status, commit, push, etc.) | CLI subprocess | Outbound |
-| Local filesystem | Read/write config files, repository files | OS file operations | Internal |
+| Git | Version control | GitPython | Internal |
+| GitHub | Repository creation, PRs | PyGithub | Outbound |
+| OpenAI | AI generation | OpenAI API | Outbound |
+| Anthropic | AI generation | Anthropic API | Outbound |
+| xAI | AI generation | xAI API | Outbound |
+| Google | AI generation | Google AI API | Outbound |
+| Local AI | AI generation | HTTP (Ollama) | Local |
 
-## Technical Constraints
+---
 
-| Constraint | Origin | Impact |
-|------------|--------|--------|
-| Windows compatibility | User requirement | Use PowerShell-compatible commands, cross-platform path handling |
-| Python 3.8+ only | Language version constraint | Use only features available in Python 3.8+ |
+## Supported AI Providers
 
-## Development Environment
-
+```python
+# Example: Using different providers
+run-git commit-ai --provider openai --model gpt-4o
+run-git commit-ai --provider anthropic --model claude-3-5-sonnet
+run-git commit-ai --provider grok --model grok-2
+run-git commit-ai --provider google --model gemini-2.0-flash
+run-git commit-ai --provider local --model llama3
 ```
-Setup: python -m venv .venv && .venv\Scripts\Activate.ps1 && pip install -e ".[test]"
-Requirements: Python 3.8+, git executable
-Local Dev: python -m gitpush or run-git (if installed)
-Testing: pytest or python -m pytest tests/
-```
-
-## Deployment
-
-```
-Environment: PyPI package (distribution), local development
-Platform: PyPI for package distribution, GitHub Actions for CI
-CI/CD: GitHub Actions workflows (tests.yml, quality.yml, publish.yml)
-Monitoring: None (CLI tool)
-```
-
-## Onboarding Checklist
-
-- [ ] Know the primary tech stack (Python 3.8+, Click, rich, questionary)
-- [ ] Understand the architecture pattern and why it was chosen
-- [ ] Know the key project directories and their purpose
-- [ ] Understand major technical decisions and rationale
-- [ ] Know integration points and dependencies (Git executable, filesystem)
-- [ ] Be able to set up local development environment
-- [ ] Know how to run tests and deploy
-
-## 📂 Codebase References
-
-- **CLI Entry**: `gitpush/cli.py` - Top-level Click command group
-- **Commands**: `gitpush/commands/` - Thin CLI orchestration layer
-- **Core Logic**: `gitpush/core/` - Business logic (Git operations, commit generation)
-- **UI Layer**: `gitpush/ui/` - Terminal UX (Rich, questionary)
-- **Config**: `gitpush/config/settings.py` - Config model + persistence
-- **Tests**: `tests/` - Automated tests (pytest, unittest style)
-
-## Related Files
-
-- `business-domain.md` - Why this technical foundation exists
-- `business-tech-bridge.md` - How business needs map to technical solutions
-- `decisions-log.md` - Full decision history with context
 
 ---
 
 ## Code Patterns
 
-### Naming Conventions
+### Command Pattern (Click)
 
-| Type | Convention | Example |
-|------|-----------|---------|
-| Files | snake_case | `cli.py`, `git_operations.py` |
-| Functions/Variables | snake_case | `get_status()`, `commit_message` |
-| Classes | PascalCase | `GitOperations`, `CommitGenerator` |
-| Constants | UPPER_SNAKE_CASE | `DEFAULT_BRANCH`, `MAX_MESSAGE_LENGTH` |
-| Database | snake_case | N/A (no database) |
+```python
+import click
+from gitpush.ui.banner import show_success
 
-### Code Standards
 
-1. **Formatting**: Follow Black formatting (line length 100 in pyproject.toml)
-2. **Types**: Add type hints for public function signatures
-3. **Imports**: Prefer absolute imports from `gitpush.*`, group: stdlib → third-party → local
-4. **Architecture**: Keep `commands/` thin (parse args → call core → render output)
-5. **Business Logic**: Keep reusable logic in `core/` (testable without CLI dependencies)
-6. **UI Layer**: Keep terminal rendering and interaction in `ui/` (Rich, questionary)
-7. **Validation**: Validate inputs early with `gitpush/utils/validators.py`
-8. **Errors**: Use project exceptions from `gitpush/exceptions.py`
-9. **Testing**: Follow AAA pattern (Arrange → Act → Assert)
-10. **Constants**: Avoid hardcoded values, use config/settings
+@click.command()
+@click.option("--message", "-m", help="Custom message")
+@click.pass_context
+def push(ctx, message):
+    """Push changes to remote."""
+    show_success("Changes pushed!")
+```
 
-### Security Requirements
+### Core Pattern (Testable)
 
-1. **No Secrets**: Never commit secrets or credentials to version control
-2. **Input Sanitization**: Sanitize command arguments before passing to git subprocess
-3. **Path Validation**: Validate file paths to prevent path traversal attacks
-4. **Subprocess Safety**: Use subprocess with `shell=False` to prevent command injection
-5. **Error Handling**: Handle errors gracefully without exposing sensitive information
-6. **Config Security**: Don't store sensitive data in config files without encryption
+```python
+def git_add(path: str) -> bool:
+    """Add file to staging."""
+    repo = get_current_repo()
+    repo.index.add(path)
+    return True
+```
+
+### AI Provider Pattern
+
+```python
+class OpenAIProvider:
+    def generate(self, prompt: str) -> str:
+        response = self.client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message.content
+```
+
+---
+
+## Development Environment
+
+```
+Setup: python -m venv .venv && pip install -e ".[test]"
+Requirements: Python 3.8+, Git
+Local Dev: python -m gitpush
+Testing: pytest tests/
+Formatting: black gitpush/
+Linting: flake8 gitpush/
+```
+
+---
+
+## Deployment
+
+```
+Environment: PyPI (pip install)
+Platform: Cross-platform (Python)
+CI/CD: GitHub Actions (tests.yml, quality.yml, publish.yml)
+Monitoring: None (CLI tool)
+```
+
+---
+
+## Onboarding Checklist
+
+- [x] Know the primary tech stack (Python, Click, Rich, GitPython)
+- [x] Understand the architecture pattern and why it was chosen
+- [x] Know the key project directories and their purpose
+- [x] Understand major technical decisions and rationale
+- [x] Know integration points and dependencies
+- [x] Be able to set up local development environment
+- [x] Know how to run tests and deploy
+
+---
+
+## 📂 Codebase References
+
+**Implementation**: `gitpush/cli.py` - Main CLI entry point
+**Core Logic**: `gitpush/core/git_operations.py` - Git operations
+**AI Engine**: `gitpush/ai/client.py` - AI client
+**Config**: `pyproject.toml`, `gitpush/config/settings.py`
+
+---
+
+## Related Files
+
+- `ARCHITECTURE.md` - Detailed architecture
+- `API_REFERENCE.md` - CLI commands
+- `DEVELOPMENT_GUIDE.md` - Development guide
+- `pyproject.toml` - Project configuration

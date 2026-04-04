@@ -1,4 +1,4 @@
-<!-- Context: project-intelligence/nav | Priority: high | Version: 1.2 | Updated: 2026-03-31 -->
+<!-- Context: project-intelligence/nav | Priority: high | Version: 1.1 | Updated: 2026-04-05 -->
 
 # Project Intelligence
 
@@ -27,17 +27,33 @@
 | Current state | `living-notes.md` | Active issues and open questions |
 | All of the above | Read all files in order | Full project intelligence |
 
+## Root Documentation
+
+| Document | Purpose |
+|----------|---------|
+| `README.md` | Main project documentation |
+| `ARCHITECTURE.md` | Technical architecture overview |
+| `API_REFERENCE.md` | CLI command reference |
+| `DEVELOPMENT_GUIDE.md` | How to develop and extend |
+| `TESTING_GUIDE.md` | Testing procedures |
+| `CONFIGURATION.md` | Configuration options |
+| `SPEC.md` | Product specification |
+| `PROJECT_OVERVIEW.md` | Project overview |
+
 ## Usage
 
 **New Team Member / Agent**:
 1. Start with `navigation.md` (this file)
-2. Read all files in order for complete understanding
-3. Follow onboarding checklist in each file
+2. Read technical-domain.md for stack understanding
+3. Check ARCHITECTURE.md for detailed architecture
+4. Follow onboarding checklist in each file
 
 **Quick Reference**:
 - Business focus → `business-domain.md`
 - Technical focus → `technical-domain.md`
 - Decision context → `decisions-log.md`
+- CLI commands → `API_REFERENCE.md`
+- Development → `DEVELOPMENT_GUIDE.md`
 
 ## Integration
 
