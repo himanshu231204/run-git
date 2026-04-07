@@ -7,6 +7,7 @@ import shutil
 import os
 import sys
 from pathlib import Path
+from unittest.mock import patch, MagicMock
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -183,6 +184,245 @@ class TestCLI(unittest.TestCase):
         from gitpush import __version__
         self.assertIsNotNone(__version__)
         self.assertEqual(__version__, "1.4.0")
+
+
+class TestGitHubManager(unittest.TestCase):
+    """Test GitHub Manager"""
+    
+    def setUp(self):
+        """Set up test fixtures"""
+        self.test_dir = tempfile.mkdtemp()
+        self.original_dir = os.getcwd()
+        os.chdir(self.test_dir)
+    
+    def tearDown(self):
+        """Clean up test fixtures"""
+        os.chdir(self.original_dir)
+        shutil.rmtree(self.test_dir, ignore_errors=True)
+    
+    def test_is_valid_repo_name(self):
+        """Test repository name validation"""
+        from gitpush.core.github_manager import GitHubManager
+        
+        gh = GitHubManager()
+        
+        # Valid names
+        self.assertTrue(gh._is_valid_repo_name("my-repo"))
+        self.assertTrue(gh._is_valid_repo_name("MyRepo123"))
+        self.assertTrue(gh._is_valid_repo_name("repo.name"))
+        
+        # Invalid names
+        self.assertFalse(gh._is_valid_repo_name(""))
+        self.assertFalse(gh._is_valid_repo_name("-starts-with-hyphen"))
+        self.assertFalse(gh._is_valid_repo_name("ends-with-hyphen-"))
+    
+    def test_clean_url(self):
+        """Test URL cleaning"""
+        from gitpush.core.github_manager import GitHubManager
+        
+        gh = GitHubManager()
+        
+        # Valid URLs
+        url = gh._clean_url("https://github.com/user/repo.git")
+        self.assertEqual(url, "https://github.com/user/repo.git")
+        
+        # URLs with whitespace
+        url = gh._clean_url("  https://github.com/user/repo.git  ")
+        self.assertEqual(url, "https://github.com/user/repo.git")
+        
+        # Invalid URLs
+        self.assertIsNone(gh._clean_url(""))
+        self.assertIsNone(gh._clean_url(None))
+        self.assertIsNone(gh._clean_url("not-a-url"))
+    
+    @patch('github.Github')
+    def test_repo_exists_returns_true(self, mock_github):
+        """Test repo_exists returns True when repo exists"""
+        from gitpush.core.github_manager import GitHubManager
+        
+        mock_gh_instance = MagicMock()
+        mock_github.return_value = mock_gh_instance
+        mock_user = MagicMock()
+        mock_gh_instance.get_user.return_value = mock_user
+        mock_user.get_repo.return_value = MagicMock()  # Repo found
+        
+        gh = GitHubManager()
+        gh.github = mock_gh_instance
+        
+        result = gh.repo_exists("existing-repo")
+        self.assertTrue(result)
+    
+    @patch('github.Github')
+    def test_repo_exists_returns_false(self, mock_github):
+        """Test repo_exists returns False when repo doesn't exist"""
+        from gitpush.core.github_manager import GitHubManager
+        
+        mock_gh_instance = MagicMock()
+        mock_github.return_value = mock_gh_instance
+        mock_user = MagicMock()
+        mock_gh_instance.get_user.return_value = mock_user
+        mock_user.get_repo.side_effect = Exception("Not Found")
+        
+        gh = GitHubManager()
+        gh.github = mock_gh_instance
+        
+        result = gh.repo_exists("nonexistent-repo")
+        self.assertFalse(result)
+    
+    @patch('github.Github')
+    def test_suggest_repo_name(self, mock_github):
+        """Test repository name suggestion for existing repos"""
+        from gitpush.core.github_manager import GitHubManager
+        
+        mock_gh_instance = MagicMock()
+        mock_github.return_value = mock_gh_instance
+        mock_user = MagicMock()
+        mock_gh_instance.get_user.return_value = mock_user
+        
+        # Call sequence (starts from base-1):
+        # 1. repo_exists("test-base-repo-1") - returns True (exists)
+        # 2. repo_exists("test-base-repo-2") - raises Exception (doesn't exist)
+        mock_user.get_repo.side_effect = [MagicMock(), Exception("Not Found")]
+        
+        gh = GitHubManager()
+        gh.github = mock_gh_instance
+        
+        # Should suggest "test-base-repo-2" when "test-base-repo-1" exists
+        suggested = gh.suggest_repo_name("test-base-repo")
+        
+        self.assertEqual(suggested, "test-base-repo-2")
+    
+    def test_detect_language_python(self):
+        """Test language detection for Python projects"""
+        from gitpush.core.github_manager import GitHubManager
+        
+        # Create requirements.txt
+        with open('requirements.txt', 'w') as f:
+            f.write("requests\n")
+        
+        gh = GitHubManager()
+        language = gh.detect_language()
+        
+        self.assertEqual(language, "Python")
+    
+    def test_detect_language_node(self):
+        """Test language detection for Node projects"""
+        from gitpush.core.github_manager import GitHubManager
+        
+        # Create package.json
+        with open('package.json', 'w') as f:
+            f.write('{"name": "test"}')
+        
+        gh = GitHubManager()
+        language = gh.detect_language()
+        
+        self.assertEqual(language, "Node")
+    
+    def test_detect_language_java(self):
+        """Test language detection for Java projects"""
+        from gitpush.core.github_manager import GitHubManager
+        
+        # Create pom.xml
+        with open('pom.xml', 'w') as f:
+            f.write("<project></project>")
+        
+        gh = GitHubManager()
+        language = gh.detect_language()
+        
+        self.assertEqual(language, "Java")
+    
+    def test_detect_language_default(self):
+        """Test language detection defaults to Python"""
+        from gitpush.core.github_manager import GitHubManager
+        
+        gh = GitHubManager()
+        language = gh.detect_language()
+        
+        self.assertEqual(language, "Python")
+    
+    def test_get_gitignore_templates(self):
+        """Test gitignore template list"""
+        from gitpush.core.github_manager import GitHubManager
+        
+        gh = GitHubManager()
+        templates = gh.get_gitignore_templates()
+        
+        self.assertIn("Python", templates)
+        self.assertIn("Node", templates)
+        self.assertIn("Java", templates)
+    
+    def test_get_license_templates(self):
+        """Test license template list"""
+        from gitpush.core.github_manager import GitHubManager
+        
+        gh = GitHubManager()
+        licenses = gh.get_license_templates()
+        
+        self.assertIn("MIT", licenses)
+        self.assertIn("Apache 2.0", licenses)
+        self.assertEqual(licenses["MIT"], "mit")
+
+
+class TestCloneFunction(unittest.TestCase):
+    """Test clone functionality"""
+    
+    def setUp(self):
+        """Set up test directory"""
+        self.test_dir = tempfile.mkdtemp()
+        self.original_dir = os.getcwd()
+        os.chdir(self.test_dir)
+    
+    def tearDown(self):
+        """Clean up test directory"""
+        os.chdir(self.original_dir)
+        shutil.rmtree(self.test_dir, ignore_errors=True)
+    
+    def test_is_directory_empty_true(self):
+        """Test empty directory detection"""
+        from gitpush.commands.init import is_directory_empty
+        self.assertTrue(is_directory_empty("."))
+    
+    def test_is_directory_empty_false(self):
+        """Test non-empty directory detection"""
+        from gitpush.commands.init import is_directory_empty
+        # Create a file
+        with open("test.txt", "w") as f:
+            f.write("test")
+        self.assertFalse(is_directory_empty("."))
+    
+    def test_is_directory_empty_ignores_hidden(self):
+        """Test that hidden files are ignored"""
+        from gitpush.commands.init import is_directory_empty
+        # Create hidden file
+        with open(".gitignore", "w") as f:
+            f.write("test")
+        self.assertTrue(is_directory_empty("."))
+    
+    def test_validate_repo_url_empty(self):
+        """Test validation of empty URL"""
+        from gitpush.commands.init import validate_repo_url
+        is_valid, result = validate_repo_url("")
+        self.assertFalse(is_valid)
+    
+    def test_validate_repo_url_invalid(self):
+        """Test validation of invalid URL"""
+        from gitpush.commands.init import validate_repo_url
+        is_valid, result = validate_repo_url("not-a-git-url")
+        self.assertFalse(is_valid)
+    
+    def test_validate_repo_url_github(self):
+        """Test validation of GitHub URL"""
+        from gitpush.commands.init import validate_repo_url
+        is_valid, result = validate_repo_url("https://github.com/user/repo")
+        self.assertTrue(is_valid)
+        self.assertEqual(result, "https://github.com/user/repo")
+    
+    def test_validate_repo_url_strips_whitespace(self):
+        """Test that URL whitespace is stripped"""
+        from gitpush.commands.init import validate_repo_url
+        is_valid, result = validate_repo_url("  https://github.com/user/repo  ")
+        self.assertTrue(is_valid)
+        self.assertEqual(result, "https://github.com/user/repo")
 
 
 if __name__ == '__main__':

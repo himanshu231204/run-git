@@ -145,50 +145,107 @@ class GitHubManager:
         return "Python"
 
     # ============================================================
-    # 🔥 FIXED CREATE REPO (EMPTY REPO)
+    # CREATE REPOSITORY
     # ============================================================
     def create_repository(self, config):
         """
         Create EMPTY GitHub repository (NO FILES)
+
+        Returns:
+            Repo object or None on failure
         """
+        # Validate repo name
+        repo_name = config.get("name", "").strip()
+        if not repo_name:
+            show_error("Repository name cannot be empty")
+            return None
+
+        # Validate repo name format
+        if not self._is_valid_repo_name(repo_name):
+            show_error(
+                "Invalid repository name. Use only letters, numbers, hyphens, and underscores."
+            )
+            return None
 
         try:
             user = self.github.get_user()
 
-            # Check exists
-            if self.repo_exists(config["name"]):
-                show_warning("Repo exists")
+            # Check if repo already exists
+            if self.repo_exists(repo_name):
+                show_warning("Repository already exists")
 
-                new_name = self.suggest_repo_name(config["name"])
+                new_name = self.suggest_repo_name(repo_name)
                 show_info(f"Suggested: {new_name}")
 
                 if questionary.confirm(f"Use {new_name}?").ask():
                     config["name"] = new_name
+                    repo_name = new_name
                 else:
                     return None
 
-            show_progress(f"Creating '{config['name']}'...")
+            show_progress(f"Creating '{repo_name}'...")
 
             repo = user.create_repo(
-                name=config["name"],
+                name=repo_name,
                 description=config.get("description", ""),
                 private=config.get("private", False),
-                auto_init=False,  # 🔥 CRITICAL
+                auto_init=False,
                 has_issues=True,
                 has_wiki=True,
                 has_downloads=True,
             )
 
-            show_success(f"Created: {repo.html_url}")
+            # Validate the returned URLs
+            clone_url = self._clean_url(getattr(repo, "clone_url", None))
+            html_url = self._clean_url(getattr(repo, "html_url", None))
+
+            if not clone_url or not html_url:
+                show_error("Failed to get repository URLs")
+                return None
+
+            # Update repo attributes with cleaned URLs
+            repo.clone_url = clone_url
+            repo.html_url = html_url
+
+            show_success(f"Created: {html_url}")
             return repo
 
         except GithubException as e:
-            show_error(f"GitHub error: {e.data.get('message', str(e))}")
+            error_msg = e.data.get("message", str(e)) if hasattr(e, "data") else str(e)
+            show_error(f"GitHub error: {error_msg}")
             return None
 
         except Exception as e:
-            show_error(str(e))
+            show_error(f"Failed to create repository: {str(e)}")
             return None
+
+    def _is_valid_repo_name(self, name):
+        """Validate repository name format."""
+        import re
+
+        # GitHub repo name rules: alphanumeric, hyphens, underscores, dots
+        # Cannot start with hyphen or dot
+        pattern = r"^[a-zA-Z0-9]([a-zA-Z0-9._-]*[a-zA-Z0-9])?$|^[a-zA-Z0-9]$"
+        return bool(re.match(pattern, name)) and len(name) <= 100
+
+    def _clean_url(self, url):
+        """Clean and validate URL."""
+        if not url:
+            return None
+
+        # Strip whitespace and control characters
+        url = url.strip()
+
+        # Remove any ANSI codes or special characters
+        import re
+
+        url = re.sub(r"[\x00-\x1f\x7f-\x9f]", "", url)
+
+        # Validate it starts with http/https
+        if not url.startswith(("http://", "https://")):
+            return None
+
+        return url
 
     # ============================================================
     # CONTENT FETCH
@@ -233,3 +290,87 @@ class GitHubManager:
         except Exception as e:
             show_warning(str(e))
             return None
+
+    # ============================================================
+    # TAG & RELEASE OPERATIONS
+    # ============================================================
+
+    def create_release(
+        self,
+        repo_name: str,
+        tag_name: str,
+        title: str,
+        body: str = "",
+        draft: bool = False,
+        prerelease: bool = False,
+    ):
+        """
+        Create a GitHub release.
+
+        Args:
+            repo_name: Name of the repository
+            tag_name: Tag name to create release from
+            title: Release title
+            body: Release notes/description
+            draft: Create as draft
+            prerelease: Mark as prerelease
+
+        Returns:
+            Release object or None on failure
+        """
+        try:
+            user = self.github.get_user()
+            repo = user.get_repo(repo_name)
+
+            show_progress(f"Creating release '{tag_name}'...")
+
+            release = repo.create_release(
+                tag_name=tag_name,
+                name=title,
+                message=body,
+                draft=draft,
+                prerelease=prerelease,
+            )
+
+            show_success(f"Release created: {release.html_url}")
+            return release
+
+        except GithubException as e:
+            error_msg = e.data.get("message", str(e)) if hasattr(e, "data") else str(e)
+            show_error(f"GitHub error: {error_msg}")
+            return None
+        except Exception as e:
+            show_error(f"Failed to create release: {str(e)}")
+            return None
+
+    def get_release_by_tag(self, repo_name: str, tag_name: str):
+        """Get a release by tag name."""
+        try:
+            user = self.github.get_user()
+            repo = user.get_repo(repo_name)
+            return repo.get_release(tag_name)
+        except Exception:
+            return None
+
+    def list_releases(self, repo_name: str, per_page: int = 30):
+        """List all releases for a repository."""
+        try:
+            user = self.github.get_user()
+            repo = user.get_repo(repo_name)
+            return list(repo.get_releases(per_page=per_page))
+        except Exception as e:
+            show_error(f"Failed to list releases: {str(e)}")
+            return []
+
+    def delete_release(self, repo_name: str, release_id: int) -> bool:
+        """Delete a release by ID."""
+        try:
+            user = self.github.get_user()
+            repo = user.get_repo(repo_name)
+            release = repo.get_release(release_id)
+            release.delete_release()
+            show_success("Release deleted")
+            return True
+        except Exception as e:
+            show_error(f"Failed to delete release: {str(e)}")
+            return False

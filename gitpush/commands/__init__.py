@@ -16,6 +16,7 @@ from gitpush.commands.pr_ai import pr_ai
 from gitpush.commands.review_ai import review_ai
 from gitpush.commands.ai import ai_command
 from gitpush.commands.config_cmd import config_cmd
+from gitpush.commands.tag_release import tag, release_command
 
 __all__ = [
     "push",
@@ -38,4 +39,6 @@ __all__ = [
     "review_ai",
     "ai_command",
     "config_cmd",
+    "tag",
+    "release_command",
 ]

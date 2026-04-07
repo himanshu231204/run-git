@@ -737,7 +737,9 @@ class InteractiveUI:
                 continue
 
             elif "Tags" in choice:
-                InteractiveUI.show_tags_table(git_ops)
+                from gitpush.commands.tag_release import show_tag_menu
+
+                show_tag_menu(git_ops)
                 continue
 
             elif "Logs" in choice:

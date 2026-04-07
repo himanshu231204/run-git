@@ -56,6 +56,7 @@ Get AI-powered code reviews, PR descriptions, and commit messages directly from 
 | **Conflict Helper** | Guided interactive merge conflict resolution |
 | **Rich Status View** | Color-coded table-based status output |
 | **AI Assistant** | Generate commit messages, code reviews, and PR descriptions with AI |
+| **Tag & Release** | Create tags, push to remote, and publish GitHub releases with one click |
 
 ---
 
@@ -92,6 +93,31 @@ run-git new my-project --quick                      # defaults, no prompts
 run-git new my-api -d "REST API" --public -g Python -l MIT  # full options
 ```
 
+### Tag & Release
+```bash
+# Create a tag
+run-git tag v1.0.0
+
+# Create tag with message
+run-git tag v1.0.0 -m "First stable release"
+
+# Create tag + push to remote
+run-git tag v1.0.0 --push
+
+# One-click: Create tag + push + GitHub release
+run-git tag v1.0.0 -r
+
+# Create release with AI-generated notes
+run-git tag v1.0.0 -r --ai
+
+# Create draft release
+run-git tag v1.0.0 -r --draft
+
+# Release from existing tag
+run-git release v1.0.0
+run-git release v1.0.0 -t "Version 1.0.0" -b "Bug fixes and improvements"
+```
+
 ---
 
 ## Command Reference
@@ -117,6 +143,9 @@ run-git new my-api -d "REST API" --public -g Python -l MIT  # full options
 | `run-git stash` | Stash uncommitted changes |
 | `run-git undo` | Undo last commit (keeps changes staged) |
 | `run-git config` | Manage configuration |
+| `run-git tag <name>` | Create and push a tag |
+| `run-git tag <name> -r` | Create tag + GitHub release |
+| `run-git release <name>` | Create release from existing tag |
 | `run-git --version` | Show installed version |
 | `run-git --help` | Show help for any command |
 

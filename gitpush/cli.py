@@ -27,6 +27,8 @@ from gitpush.commands import (
     review_ai,
     ai_command,
     config_cmd,
+    tag,
+    release_command,
 )
 
 
@@ -68,6 +70,8 @@ main.add_command(pr_ai)
 main.add_command(review_ai)
 main.add_command(ai_command)
 main.add_command(config_cmd)
+main.add_command(tag)
+main.add_command(release_command, name="release")
 
 
 if __name__ == "__main__":

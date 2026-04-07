@@ -2,6 +2,52 @@
 
 All notable changes to this project will be documented in this file.
 
+[1.5.0] - 2026-04-08
+
+### 🏷️ Tag & Release - New Feature
+
+* **Interactive Tag Management Menu**:
+  * Full menu-driven tag operations in TUI
+  * View tags in professional Rich table format
+  * Create, push, delete tags with confirmations
+
+* **Tag Commands**:
+  * `run-git tag <name>` - Create a new tag
+  * `run-git tag <name> -m "message"` - Create with annotation
+  * `run-git tag <name> --lightweight` - Create lightweight tag
+
+* **Release Commands**:
+  * `run-git tag <name> -r` - One-click: create tag + push + GitHub release
+  * `run-git tag <name> -r --draft` - Create as draft release
+  * `run-git tag <name> -r --ai` - Generate release notes with AI
+  * `run-git release <name>` - Create release from existing tag
+
+* **One-Click Release Flow**:
+  * Create tag locally
+  * Push tag to remote
+  * Create GitHub release with title and notes
+  * Support for manual or AI-generated release notes
+  * Draft release option
+
+* **GitHub Integration**:
+  * New methods in GitHubManager: `create_release()`, `list_releases()`, `delete_release()`
+  * New methods in GitOperations: `create_tag()`, `list_tags()`, `delete_tag()`, `push_tag()`, `push_all_tags()`
+  * Repository name extraction from remote URL
+  * Tag validation and error handling
+
+* **UI Enhancements**:
+  * Professional Rich panels and tables
+  * Color-coded menu options
+  * Confirmation prompts for destructive actions
+  * Progress indicators during operations
+
+### 🐛 Bug Fixes
+
+* Fixed clone to non-empty directory - now offers temp directory option
+* Added URL validation before cloning
+* Improved error handling with specific messages
+* URL cleaning - removes extra characters that could break URLs
+
 [1.4.0] - 2026-03-30
 
 ### 🤖 AI Assistant - Major Update

@@ -388,3 +388,168 @@ class GitOperations:
                     break
 
         return sensitive_files
+
+    # ============================================================
+    # TAG OPERATIONS
+    # ============================================================
+
+    def list_tags(self) -> List[Dict[str, Any]]:
+        """List all local tags with their details."""
+        try:
+            if not self.is_git_repo():
+                return []
+
+            tags = []
+            for tag in self.repo.tags:
+                tag_info = {
+                    "name": tag.name,
+                    "commit": tag.commit.hexsha[:7] if hasattr(tag, "commit") else "N/A",
+                    "message": tag.tag.message if hasattr(tag, "tag") and tag.tag else "",
+                    "date": (
+                        tag.tag.taggerdate.strftime("%Y-%m-%d %H:%M")
+                        if hasattr(tag, "tag") and tag.tag and hasattr(tag.tag, "taggerdate")
+                        else ""
+                    ),
+                }
+                tags.append(tag_info)
+            return tags
+        except Exception as e:
+            show_error(f"Failed to list tags: {str(e)}")
+            return []
+
+    def create_tag(
+        self, tag_name: str, message: Optional[str] = None, annotated: bool = True
+    ) -> bool:
+        """Create a new tag (annotated or lightweight)."""
+        try:
+            if not self.is_git_repo():
+                show_error("Not a git repository")
+                return False
+
+            # Validate tag name
+            if not self._is_valid_tag_name(tag_name):
+                show_error(
+                    f"Invalid tag name: '{tag_name}'. "
+                    "Use letters, numbers, dots, hyphens, underscores, and start with letter/number."
+                )
+                return False
+
+            # Check if tag already exists
+            if self.tag_exists(tag_name):
+                show_warning(f"Tag '{tag_name}' already exists")
+                return False
+
+            show_progress(f"Creating tag '{tag_name}'...")
+
+            if annotated:
+                # Create annotated tag
+                if not message:
+                    message = f"Release {tag_name}"
+                self.repo.create_tag(tag_name, message=message)
+            else:
+                # Create lightweight tag
+                self.repo.create_tag(tag_name)
+
+            show_success(f"Tag '{tag_name}' created successfully")
+            return True
+
+        except Exception as e:
+            show_error(f"Failed to create tag: {str(e)}")
+            return False
+
+    def tag_exists(self, tag_name: str) -> bool:
+        """Check if a tag exists locally."""
+        try:
+            if not self.is_git_repo():
+                return False
+            return tag_name in [tag.name for tag in self.repo.tags]
+        except Exception:
+            return False
+
+    def delete_tag(self, tag_name: str) -> bool:
+        """Delete a local tag."""
+        try:
+            if not self.is_git_repo():
+                show_error("Not a git repository")
+                return False
+
+            if not self.tag_exists(tag_name):
+                show_error(f"Tag '{tag_name}' does not exist")
+                return False
+
+            show_progress(f"Deleting tag '{tag_name}'...")
+            self.repo.delete_tag(tag_name)
+            show_success(f"Tag '{tag_name}' deleted")
+            return True
+
+        except Exception as e:
+            show_error(f"Failed to delete tag: {str(e)}")
+            return False
+
+    def push_tag(self, tag_name: str, remote: str = "origin") -> bool:
+        """Push a tag to remote."""
+        try:
+            if not self.is_git_repo():
+                show_error("Not a git repository")
+                return False
+
+            if not self.tag_exists(tag_name):
+                show_error(f"Tag '{tag_name}' does not exist")
+                return False
+
+            show_progress(f"Pushing tag '{tag_name}' to {remote}...")
+            self.repo.git.push(remote, tag_name)
+            show_success(f"Tag '{tag_name}' pushed to {remote}")
+            return True
+
+        except GitCommandError as e:
+            show_error(f"Failed to push tag: {str(e)}")
+            return False
+        except Exception as e:
+            show_error(f"Failed to push tag: {str(e)}")
+            return False
+
+    def push_all_tags(self, remote: str = "origin") -> bool:
+        """Push all tags to remote."""
+        try:
+            if not self.is_git_repo():
+                show_error("Not a git repository")
+                return False
+
+            tags = self.list_tags()
+            if not tags:
+                show_warning("No tags to push")
+                return False
+
+            show_progress(f"Pushing all tags to {remote}...")
+            self.repo.git.push(remote, "--tags")
+            show_success(f"All tags pushed to {remote}")
+            return True
+
+        except GitCommandError as e:
+            show_error(f"Failed to push tags: {str(e)}")
+            return False
+        except Exception as e:
+            show_error(f"Failed to push tags: {str(e)}")
+            return False
+
+    def get_remote_url(self) -> Optional[str]:
+        """Get the remote origin URL."""
+        try:
+            if not self.is_git_repo():
+                return None
+            if self.repo.remotes:
+                return self.repo.remotes.origin.url
+            return None
+        except Exception:
+            return None
+
+    @staticmethod
+    def _is_valid_tag_name(tag_name: str) -> bool:
+        """Validate tag name format."""
+        if not tag_name or len(tag_name) > 100:
+            return False
+        # Tag name can contain letters, numbers, dots, hyphens, underscores
+        # and must not start with special characters
+        pattern = r"^[a-zA-Z0-9][a-zA-Z0-9._-]*$"
+        return bool(re.match(pattern, tag_name))
