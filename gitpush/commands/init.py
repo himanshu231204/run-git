@@ -42,8 +42,14 @@ def validate_repo_url(url):
     if not is_valid:
         return False, f"Invalid URL. Must be a GitHub, GitLab, or Bitbucket repository"
 
-    # Check if URL ends with .git or is a valid clone URL
-    if not (url.endswith(".git") or "github.com/" in url):
+    # Check if URL ends with .git or is a valid clone URL (without .git suffix)
+    valid_clone = (
+        url.endswith(".git")
+        or "github.com/" in url
+        or "gitlab.com/" in url
+        or "bitbucket.org/" in url
+    )
+    if not valid_clone:
         return False, "URL must point to a valid git repository"
 
     return True, url
