@@ -63,9 +63,10 @@ class TestGitHubManagerAuth(unittest.TestCase):
         os.chdir(self.original_dir)
         shutil.rmtree(self.test_dir, ignore_errors=True)
 
+    @patch("gitpush.core.github_manager.questionary")
     @patch("github.Github")
-    def test_authenticate_valid_token(self, mock_github):
-        """Test authentication with valid token"""
+    def test_authenticate_valid_token(self, mock_github, mock_questionary):
+        """Test authentication with existing github instance"""
         mock_gh_instance = MagicMock()
         mock_user = MagicMock()
         mock_user.login = "testuser"
@@ -74,12 +75,11 @@ class TestGitHubManagerAuth(unittest.TestCase):
 
         gh = GitHubManager()
         gh.github = mock_gh_instance
+        gh.token = "test-token"
 
-        # The method tries to load config first, which will fail
-        # Then it will ask for token - we test the happy path differently
+        # Test that authenticate returns True when github is already set
         result = gh.authenticate()
-        # This will fail because questionary is not mocked
-        # But we've tested the structure
+        self.assertTrue(result)
 
 
 class TestGitHubManagerHelpers(unittest.TestCase):
