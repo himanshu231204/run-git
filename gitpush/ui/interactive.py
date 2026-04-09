@@ -44,19 +44,29 @@ from gitpush.ai.config import AIConfig
 console = Console()
 renderer = CompactDashboardRenderer(console)
 
+
+def is_compact_ui_enabled() -> bool:
+    """Return whether compact dashboard layout is enabled."""
+    try:
+        settings = get_settings()
+        return settings.get("ui_layout", "compact_dashboard") == "compact_dashboard"
+    except Exception:
+        return True
+
 # ══════════════════════════════════════════════════════════════════════════════
 # DYNAMIC QUESTIONARY STYLES (Theme-aware)
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 def get_menu_style(menu_type="main"):
     """Get questionary style based on current theme and menu type."""
     from gitpush.ui.banner import current_theme
-    
+
     primary = current_theme.colors.get("primary", "cyan")
     secondary = current_theme.colors.get("secondary", "green")
     accent = current_theme.colors.get("accent", "magenta")
     warning = current_theme.colors.get("warning", "yellow")
-    
+
     # Map Rich colors to prompt_toolkit colors
     color_map_rich_to_toolkit = {
         "cyan": "ansicyan",
@@ -74,7 +84,7 @@ def get_menu_style(menu_type="main"):
         "purple": "magenta",
         "bright_cyan": "cyan",
     }
-    
+
     # Map menu types to colors
     color_map = {
         "main": primary,
@@ -86,10 +96,10 @@ def get_menu_style(menu_type="main"):
         "confirm": secondary,
         "input": primary,
     }
-    
+
     rich_color = color_map.get(menu_type, primary)
     toolkit_color = color_map_rich_to_toolkit.get(rich_color, "ansicyan")
-    
+
     return QStyle(
         [
             ("qmark", f"fg:{toolkit_color} bold"),
@@ -184,7 +194,7 @@ INPUT_STYLE = QStyle(
 
 def get_input():
     """Get a single keypress and return normalized key name.
-    
+
     Returns:
         'UP', 'DOWN', 'LEFT', 'RIGHT', 'ENTER', 'BACK', 'QUIT'
         Single character for regular keys
@@ -192,132 +202,132 @@ def get_input():
     """
     import os
     import sys
-    
-    if os.name == 'nt':
+
+    if os.name == "nt":
         # Windows: use msvcrt
         import msvcrt
-        
+
         first = msvcrt.getch()
-        
+
         # Check for special key prefix
-        if first in (b'\x00', b'\xe0'):
+        if first in (b"\x00", b"\xe0"):
             # Special key - get second byte
             second = msvcrt.getch()
             second_byte = second[0] if second else 0
-            
+
             # Extended key codes for Windows
-            if second_byte == 72:    # VK_UP
-                return 'UP'
+            if second_byte == 72:  # VK_UP
+                return "UP"
             elif second_byte == 80:  # VK_DOWN
-                return 'DOWN'
+                return "DOWN"
             elif second_byte == 77:  # VK_RIGHT
-                return 'RIGHT'
+                return "RIGHT"
             elif second_byte == 75:  # VK_LEFT
-                return 'LEFT'
+                return "LEFT"
             elif second_byte == 83:  # VK_DELETE
-                return 'DELETE'
+                return "DELETE"
             elif second_byte == 71:  # VK_HOME
-                return 'HOME'
+                return "HOME"
             elif second_byte == 79:  # VK_END
-                return 'END'
+                return "END"
             else:
                 return None
-        
+
         # Regular key - handle common control keys
-        if first == b'\r':
-            return 'ENTER'
-        elif first == b'\x08':
-            return 'BACK'
-        elif first == b'\x1b':
-            return 'ESC'
+        if first == b"\r":
+            return "ENTER"
+        elif first == b"\x08":
+            return "BACK"
+        elif first == b"\x1b":
+            return "ESC"
         else:
             try:
                 return chr(first[0]) if first else None
             except:
                 return None
-    
+
     else:
         # Unix/Linux/Mac: use tty
         import tty
         import termios
         import select
-        
+
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)
-        
+
         try:
             tty.setraw(sys.stdin.fileno())
-            
+
             # Read first character
             first = sys.stdin.read(1)
-            
+
             # Check for escape sequence
-            if first == '\x1b':
+            if first == "\x1b":
                 # Peek for more
                 if select.select([sys.stdin], [], [], 0)[0]:
                     second = sys.stdin.read(1)
-                    if second == '[':
+                    if second == "[":
                         if select.select([sys.stdin], [], [], 0)[0]:
                             third = sys.stdin.read(1)
-                            if third == 'A':
-                                return 'UP'
-                            elif third == 'B':
-                                return 'DOWN'
-                            elif third == 'C':
-                                return 'RIGHT'
-                            elif third == 'D':
-                                return 'LEFT'
-                            elif third == 'H':
-                                return 'HOME'
-                            elif third == 'F':
-                                return 'END'
-                return 'ESC'
-            
+                            if third == "A":
+                                return "UP"
+                            elif third == "B":
+                                return "DOWN"
+                            elif third == "C":
+                                return "RIGHT"
+                            elif third == "D":
+                                return "LEFT"
+                            elif third == "H":
+                                return "HOME"
+                            elif third == "F":
+                                return "END"
+                return "ESC"
+
             # Handle regular control keys
-            if first == '\r' or first == '\n':
-                return 'ENTER'
-            elif first == '\x7f':  # DEL
-                return 'BACK'
+            if first == "\r" or first == "\n":
+                return "ENTER"
+            elif first == "\x7f":  # DEL
+                return "BACK"
             else:
                 return first
-                
+
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 
 def move_selection(current_index, key, total_items, columns=2):
     """Move selection based on key press with proper bounds checking.
-    
+
     Args:
         current_index: Current selection index
         key: Normalized key name
         total_items: Total number of items
         columns: Number of columns (default 2)
-    
+
     Returns:
         New index after move (or same if invalid move)
     """
     if key is None:
         return current_index
-    
+
     key_lower = key.lower()
-    
+
     # Handle special keys
-    if key == 'UP' or key_lower == 'w':
+    if key == "UP" or key_lower == "w":
         # Move up: index - columns
         new_index = current_index - columns
         return max(0, new_index)
-    
-    elif key == 'DOWN' or key_lower == 's':
+
+    elif key == "DOWN" or key_lower == "s":
         # Move down: index + columns
         new_index = current_index + columns
         return min(total_items - 1, new_index)
-    
-    elif key == 'RIGHT' or key_lower == 'd':
+
+    elif key == "RIGHT" or key_lower == "d":
         # Move right: check if in left column
         row = current_index // columns
         col = current_index % columns
-        
+
         # Can only move right if in left column (col == 0)
         if col == 0:
             # Check if right column has item at this row
@@ -325,18 +335,18 @@ def move_selection(current_index, key, total_items, columns=2):
             if right_index < total_items:
                 return right_index
         return current_index
-    
-    elif key == 'LEFT' or key_lower == 'a':
+
+    elif key == "LEFT" or key_lower == "a":
         # Move left: check if in right column
         row = current_index // columns
         col = current_index % columns
-        
+
         # Can only move left if in right column (col == 1)
         if col == 1:
             left_index = row * columns + 0
             return left_index
         return current_index
-    
+
     else:
         # Other keys - stay in place
         return current_index
@@ -344,7 +354,7 @@ def move_selection(current_index, key, total_items, columns=2):
 
 def render_grid(options, current_index, columns=2, qmark="➜", pointer="►", clear_screen=True):
     """Render the grid menu with highlighting.
-    
+
     Args:
         options: List of option strings
         current_index: Currently selected index
@@ -354,29 +364,29 @@ def render_grid(options, current_index, columns=2, qmark="➜", pointer="►", c
         clear_screen: Whether to clear screen before rendering
     """
     import os
-    
+
     # Clear screen if requested
     if clear_screen:
-        os.system('cls' if os.name == 'nt' else 'clear')
-    
+        os.system("cls" if os.name == "nt" else "clear")
+
     # Print header
     print(f"\n {qmark} Select (↑↓←→ navigate, Enter select, b back):\n")
-    
+
     # Render in pairs (left, right) for strict 2-column layout
     for i in range(0, len(options), 2):
         left_item = options[i]
         right_item = options[i + 1] if i + 1 < len(options) else ""
-        
+
         # Determine which index is selected
-        left_selected = (current_index == i)
+        left_selected = current_index == i
         right_selected = (i + 1 < len(options)) and (current_index == i + 1)
-        
+
         # Build left column with pointer if selected
         if left_selected:
             left_display = f"{pointer} {left_item}"
         else:
             left_display = f"  {left_item}"
-        
+
         # Build right column with pointer if selected
         if right_selected:
             right_display = f"{pointer} {right_item}"
@@ -384,21 +394,21 @@ def render_grid(options, current_index, columns=2, qmark="➜", pointer="►", c
             right_display = f"  {right_item}"
         else:
             right_display = ""
-        
+
         # Print row with proper spacing
         if right_item:
             print(f"  {left_display:<15} {right_display}")
         else:
             print(f"  {left_display}")
-    
+
     print()
 
 
 def grid_select(options, columns=2, qmark="➜", pointer="►", style=None, clear_screen=True):
     """Grid selection with FULL 2D arrow key navigation.
-    
+
     Clean implementation with proper state management.
-    
+
     Args:
         options: List of selectable options
         columns: Number of columns (default 2)
@@ -406,43 +416,43 @@ def grid_select(options, columns=2, qmark="➜", pointer="►", style=None, clea
         pointer: Selection pointer character
         style: (unused, for compatibility)
         clear_screen: Whether to clear screen on each render (default True)
-    
+
     Returns:
         Selected option string, or '🔙 Back' if cancelled
     """
     if not options:
         return None
-    
+
     # State management
     total_items = len(options)
     current_index = 0  # Start at first item
-    
+
     # Main navigation loop
     while True:
         # Render current state
         render_grid(options, current_index, columns, qmark, pointer)
-        
+
         # Get input
         key = get_input()
-        
+
         if key is None:
             continue
-        
+
         # Debug: print current state
         # print(f"[DEBUG] key={key}, index={current_index}, total={total_items}")
-        
+
         # Handle selection keys
-        if key == 'ENTER' or key == '\r' or key == '\n':
+        if key == "ENTER" or key == "\r" or key == "\n":
             return options[current_index]
-        
+
         # Handle back/cancel
-        if key in ['BACK', 'ESC', 'b', 'B']:
+        if key in ["BACK", "ESC", "b", "B"]:
             return "🔙 Back"
-        
+
         # Handle quit
-        if key.lower() == 'q':
+        if key.lower() == "q":
             return None
-        
+
         # Move selection
         new_index = move_selection(current_index, key, total_items, columns)
         if new_index != current_index:
@@ -456,7 +466,7 @@ def refresh_menu_styles():
     global MAIN_MENU_STYLE, BRANCH_MENU_STYLE, AI_MENU_STYLE
     global ADVANCED_MENU_STYLE, SETTINGS_MENU_STYLE, GRAPH_MENU_STYLE
     global CONFIRM_STYLE, INPUT_STYLE
-    
+
     MAIN_MENU_STYLE = get_menu_style("main")
     BRANCH_MENU_STYLE = get_menu_style("branch")
     AI_MENU_STYLE = get_menu_style("ai")
@@ -478,15 +488,26 @@ def show_repo_context():
     from gitpush.core.git_operations import GitOperations
 
     git_ops = GitOperations()
+    compact_ui = is_compact_ui_enabled()
 
     if not git_ops.is_git_repo():
-        renderer.render_repo_context(
-            repo_name="-",
-            branch_name="-",
-            total_changes=0,
-            is_repo=False,
-            border_color="red",
-        )
+        if compact_ui:
+            renderer.render_repo_context(
+                repo_name="-",
+                branch_name="-",
+                total_changes=0,
+                is_repo=False,
+                border_color="red",
+            )
+        else:
+            panel = Panel(
+                "[bold red]Not a Git Repository[/bold red]\n"
+                "[dim]Run 'run-git init' to initialize or navigate to a git repo[/dim]",
+                title="[bold]CONTEXT[/bold]",
+                border_style="red",
+                box=box.ROUNDED,
+            )
+            console.print(panel)
         return None
 
     # Get repo info
@@ -505,13 +526,32 @@ def show_repo_context():
         + len(status_data.get("deleted", []))
     )
 
-    renderer.render_repo_context(
-        repo_name=repo_name,
-        branch_name=branch_name,
-        total_changes=total_changes,
-        is_repo=True,
-        border_color="cyan",
-    )
+    if compact_ui:
+        renderer.render_repo_context(
+            repo_name=repo_name,
+            branch_name=branch_name,
+            total_changes=total_changes,
+            is_repo=True,
+            border_color="cyan",
+        )
+    else:
+        status_text = (
+            "[green]Clean[/green]"
+            if total_changes == 0
+            else f"[yellow]{total_changes} change(s)[/yellow]"
+        )
+        context_info = (
+            f"[bold cyan]Repo:[/bold cyan] {repo_name}\n"
+            f"[bold green]Branch:[/bold green] {branch_name}\n"
+            f"[bold magenta]Status:[/bold magenta] {status_text}"
+        )
+        panel = Panel(
+            context_info,
+            title="[bold]CONTEXT[/bold]",
+            border_style="cyan",
+            box=box.ROUNDED,
+        )
+        console.print(panel)
 
 
 def show_premium_menu(
@@ -533,6 +573,8 @@ def show_premium_menu(
     Returns:
         Selected option key, "back", "quit", or empty string
     """
+    compact_ui = is_compact_ui_enabled()
+
     # Collect all items from all sections
     all_items = []
     compact_sections = []
@@ -541,13 +583,27 @@ def show_premium_menu(
         for key, icon, label, desc in section.get("items", []):
             all_items.append((key, icon, label, desc))
             section_items.append(MenuItem(key=key, icon=icon, label=label, description=desc))
-        compact_sections.append(MenuSection(title=section.get("title", "MENU"), items=section_items))
+        compact_sections.append(
+            MenuSection(title=section.get("title", "MENU"), items=section_items)
+        )
 
     if not all_items:
         console.print("[dim]No actions available[/dim]\n")
         return ""
 
-    renderer.render_header(title=title, border_color=border_color, breadcrumb=breadcrumb)
+    if compact_ui:
+        renderer.render_header(title=title, border_color=border_color, breadcrumb=breadcrumb)
+    else:
+        panel = Panel(
+            "[bold]Smart Git CLI for Developers[/bold]",
+            title=f"[bold]{title}[/bold]",
+            border_style=border_color,
+            box=box.DOUBLE,
+        )
+        console.print(panel)
+        if breadcrumb:
+            console.print(f"[dim]{breadcrumb}[/dim]")
+        console.print()
 
     # Style map for different menus
     style_map = {
@@ -558,10 +614,36 @@ def show_premium_menu(
         "blue": SETTINGS_MENU_STYLE,
     }
 
-    return renderer.select_menu(
-        compact_sections,
+    if compact_ui:
+        return renderer.select_menu(
+            compact_sections,
+            style=style_map.get(border_color, MAIN_MENU_STYLE),
+        )
+
+    all_choices = []
+    choice_map = {}
+    for section in sections:
+        for key, icon, label, desc in section.get("items", []):
+            choice_text = f"{icon} {label}   ->   {desc}"
+            all_choices.append(choice_text)
+            choice_map[choice_text] = key
+
+    selected = questionary.select(
+        "",
+        choices=all_choices,
+        qmark=">",
+        pointer=">",
         style=style_map.get(border_color, MAIN_MENU_STYLE),
-    )
+    ).ask()
+
+    if selected:
+        key = choice_map.get(selected, "")
+        if key == "b":
+            return "back"
+        if key == "q":
+            return "quit"
+        return key
+    return ""
 
 
 class InteractiveUI:
@@ -795,7 +877,7 @@ class InteractiveUI:
             ]
 
             key = show_premium_menu(
-                "=== BRANCH OPERATIONS ===", branch_sections, "green", "Main Menu > Branch"
+                "Branch Operations", branch_sections, "green", "Main Menu > Branch"
             )
 
             # Handle special navigation keys
@@ -914,20 +996,29 @@ class InteractiveUI:
     def settings_menu():
         """Show settings menu"""
         while True:
+            settings = get_settings()
+            current_ui_mode = settings.get("ui_layout", "compact_dashboard")
+
             # Define menu sections
             settings_sections = [
                 {
                     "title": "SETTINGS",
                     "items": [
                         ("1", "🎨", "Theme Settings", "Change color theme"),
-                        ("2", "📋", "View Config", "Show current configuration"),
+                        (
+                            "2",
+                            "🖥️",
+                            "UI Mode",
+                            f"Current: {'Compact' if current_ui_mode == 'compact_dashboard' else 'Legacy'}",
+                        ),
+                        ("3", "📋", "View Config", "Show current configuration"),
                         ("b", "⬅️", "Back", "Return to main menu"),
                     ],
                 },
             ]
 
             key = show_premium_menu(
-                "=== SETTINGS ===", settings_sections, "blue", "Main Menu > Settings"
+                "Settings", settings_sections, "blue", "Main Menu > Settings"
             )
 
             # Handle special navigation keys
@@ -939,7 +1030,8 @@ class InteractiveUI:
 
             choice_map = {
                 "1": "Theme Settings",
-                "2": "View Config",
+                "2": "UI Mode",
+                "3": "View Config",
             }
             choice = choice_map.get(key, "")
 
@@ -947,7 +1039,7 @@ class InteractiveUI:
                 continue
 
             if "Theme" in choice:
-                from gitpush.ui.banner import ThemeManager, set_theme
+                from gitpush.ui.banner import set_theme
 
                 theme_choice = questionary.select(
                     "Select theme:",
@@ -959,6 +1051,49 @@ class InteractiveUI:
                 if theme_choice:
                     set_theme(theme_choice)
                     show_success(f"Theme set to '{theme_choice}'!")
+                continue
+
+            if "UI Mode" in choice:
+                ui_mode_choice = questionary.select(
+                    "Select UI mode:",
+                    choices=[
+                        "compact_dashboard  - Compact Claude-like dashboard",
+                        "legacy             - Classic menu layout",
+                    ],
+                    qmark=">",
+                    pointer=">",
+                    style=SETTINGS_MENU_STYLE,
+                ).ask()
+
+                if ui_mode_choice:
+                    selected_mode = ui_mode_choice.split()[0]
+                    settings.set("ui_layout", selected_mode)
+                    settings.save()
+                    show_success(
+                        "UI mode switched to 'Compact'"
+                        if selected_mode == "compact_dashboard"
+                        else "UI mode switched to 'Legacy'"
+                    )
+                continue
+
+            if "View Config" in choice:
+                all_settings = settings.all()
+                config_panel = Panel(
+                    "\n".join(
+                        [
+                            f"[bold cyan]theme[/bold cyan]: {all_settings.get('theme', 'default')}",
+                            f"[bold cyan]ui_layout[/bold cyan]: {all_settings.get('ui_layout', 'compact_dashboard')}",
+                            f"[bold cyan]ui_density[/bold cyan]: {all_settings.get('ui_density', 'compact')}",
+                            f"[bold cyan]ai_provider[/bold cyan]: {all_settings.get('ai_provider', 'local')}",
+                            f"[bold cyan]default_remote[/bold cyan]: {all_settings.get('default_remote', 'origin')}",
+                            f"[bold cyan]default_branch[/bold cyan]: {all_settings.get('default_branch', 'main')}",
+                        ]
+                    ),
+                    title="Configuration",
+                    border_style="blue",
+                    box=box.ROUNDED,
+                )
+                console.print(config_panel)
                 continue
 
     @staticmethod
@@ -981,7 +1116,7 @@ class InteractiveUI:
             ]
 
             key = show_premium_menu(
-                "=== ADVANCED TOOLS ===", advanced_sections, "yellow", "Main Menu > Advanced"
+                "Advanced Tools", advanced_sections, "yellow", "Main Menu > Advanced"
             )
 
             # Handle special navigation keys
@@ -1077,7 +1212,7 @@ class InteractiveUI:
             ]
 
             key = show_premium_menu(
-                "=== AI ASSISTANT ===", ai_sections, "magenta", "Main Menu > AI Assistant"
+                "AI Assistant", ai_sections, "magenta", "Main Menu > AI Assistant"
             )
 
             # Handle special navigation keys
@@ -1594,7 +1729,7 @@ class InteractiveUI:
             ]
 
             key = show_premium_menu(
-                "=== COMMIT GRAPH ===", graph_sections, "cyan", "Main Menu > Commit Graph"
+                "Commit Graph", graph_sections, "cyan", "Main Menu > Commit Graph"
             )
 
             # Handle special navigation keys

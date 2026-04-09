@@ -57,6 +57,31 @@ class CompactDashboardRenderer:
         }
         return icon_map.get(icon, "*")
 
+    @staticmethod
+    def _clip_text(text: str, max_len: int) -> str:
+        """Clip text to max length while preserving readability."""
+        if max_len <= 0:
+            return ""
+        if len(text) <= max_len:
+            return text
+        if max_len <= 3:
+            return text[:max_len]
+        return f"{text[: max_len - 3]}..."
+
+    def _format_menu_line(self, item: MenuItem, width: int) -> str:
+        """Build a compact, width-aware menu line."""
+        icon = self._to_ascii_icon(item.icon)
+
+        # Keep labels aligned while adapting to terminal width.
+        label_width = max(12, min(20, width // 4))
+        label = self._clip_text(item.label, label_width)
+
+        # Reserve room for icon + spacing + separator and avoid hard wraps.
+        reserved = 6 + label_width
+        desc_width = max(16, width - reserved)
+        description = self._clip_text(item.description, desc_width)
+        return f"{icon} {label:<{label_width}} {description}"
+
     def render_header(self, title: str, border_color: str = "cyan", breadcrumb: str = "") -> None:
         """Render a compact dashboard header."""
         self.console.print(Rule(style=border_color))
@@ -111,13 +136,15 @@ class CompactDashboardRenderer:
     def select_menu(self, sections: List[MenuSection], style) -> str:
         """Render a compact grouped menu and return selected action key."""
         choices = []
+        terminal_width = getattr(self.console.size, "width", 100)
+        line_width = max(50, terminal_width - 8)
 
         for section in sections:
             choices.append(Separator(f"-- {section.title} --"))
             for item in section.items:
-                icon = self._to_ascii_icon(item.icon)
-                label = f"{item.label:<18} {item.description}"
-                choices.append(Choice(title=f"{icon} {label}", value=item.key))
+                choices.append(
+                    Choice(title=self._format_menu_line(item, line_width), value=item.key)
+                )
 
         selected = questionary.select(
             "",
