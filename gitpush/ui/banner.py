@@ -269,18 +269,24 @@ def show_shortcuts():
     """Show available keyboard shortcuts"""
     from rich.table import Table
     from rich.panel import Panel
+    from gitpush.ui.help_docs import MENU_SHORTCUTS
 
-    table = Table(show_header=True, header_style=f"bold {current_theme.colors['primary']}")
+    primary = current_theme.colors["primary"]
+    
+    table = Table(show_header=True, header_style=f"bold {primary}")
     table.add_column("Key", style="yellow", width=8)
     table.add_column("Action", style="white")
+    table.add_column("Description", style="dim")
 
-    for key, action in KEYBOARD_SHORTCUTS.items():
-        table.add_row(f"[bold]{key}[/]", action)
+    # Get main menu shortcuts from help_docs
+    shortcuts = MENU_SHORTCUTS.get("main_menu", {}).get("items", [])
+    for key, action, description in shortcuts:
+        table.add_row(f"[bold]{key}[/bold]", action, description)
 
     panel = Panel(
         table,
-        title=f"[{current_theme.colors['primary']}]⌨  Keyboard Shortcuts[/{current_theme.colors['primary']}]",
-        border_style=current_theme.colors["primary"],
+        title=f"[{primary}]⌨  Keyboard Shortcuts[/{primary}]",
+        border_style=primary,
         box=box.ROUNDED,
     )
     console.print(panel)

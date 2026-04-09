@@ -21,6 +21,20 @@ from rich import box
 from rich.style import Style
 from rich.rule import Rule
 from gitpush.ui.banner import current_theme, show_shortcuts, show_success, show_error, show_info
+from gitpush.ui.help_docs import (
+    CLI_COMMANDS,
+    MENU_SHORTCUTS,
+    QUICK_REFERENCE,
+    get_command_help,
+    get_all_commands,
+    get_menu_shortcuts,
+    show_command_list,
+    show_shortcuts_table,
+    show_quick_reference,
+    show_help_menu,
+    show_command_details,
+    show_all_shortcuts_menu,
+)
 from gitpush.core.git_operations import GitOperations
 from gitpush.core.ai_engine import AIEngine
 from gitpush.config.settings import get_settings
@@ -155,8 +169,284 @@ INPUT_STYLE = QStyle(
         ("pointer", "fg:cyan bold"),
         ("highlighted", "fg:cyan bold"),
         ("selected", "fg:cyan bold"),
+        ("answer", "fg:cyan bold"),
+        ("question", "fg:ansicyan bold"),
     ]
 )
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ROBUST GRID NAVIGATION SYSTEM
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+def get_input():
+    """Get a single keypress and return normalized key name.
+    
+    Returns:
+        'UP', 'DOWN', 'LEFT', 'RIGHT', 'ENTER', 'BACK', 'QUIT'
+        Single character for regular keys
+        None on error
+    """
+    import os
+    import sys
+    
+    if os.name == 'nt':
+        # Windows: use msvcrt
+        import msvcrt
+        
+        first = msvcrt.getch()
+        
+        # Check for special key prefix
+        if first in (b'\x00', b'\xe0'):
+            # Special key - get second byte
+            second = msvcrt.getch()
+            second_byte = second[0] if second else 0
+            
+            # Extended key codes for Windows
+            if second_byte == 72:    # VK_UP
+                return 'UP'
+            elif second_byte == 80:  # VK_DOWN
+                return 'DOWN'
+            elif second_byte == 77:  # VK_RIGHT
+                return 'RIGHT'
+            elif second_byte == 75:  # VK_LEFT
+                return 'LEFT'
+            elif second_byte == 83:  # VK_DELETE
+                return 'DELETE'
+            elif second_byte == 71:  # VK_HOME
+                return 'HOME'
+            elif second_byte == 79:  # VK_END
+                return 'END'
+            else:
+                return None
+        
+        # Regular key - handle common control keys
+        if first == b'\r':
+            return 'ENTER'
+        elif first == b'\x08':
+            return 'BACK'
+        elif first == b'\x1b':
+            return 'ESC'
+        else:
+            try:
+                return chr(first[0]) if first else None
+            except:
+                return None
+    
+    else:
+        # Unix/Linux/Mac: use tty
+        import tty
+        import termios
+        import select
+        
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        
+        try:
+            tty.setraw(sys.stdin.fileno())
+            
+            # Read first character
+            first = sys.stdin.read(1)
+            
+            # Check for escape sequence
+            if first == '\x1b':
+                # Peek for more
+                if select.select([sys.stdin], [], [], 0)[0]:
+                    second = sys.stdin.read(1)
+                    if second == '[':
+                        if select.select([sys.stdin], [], [], 0)[0]:
+                            third = sys.stdin.read(1)
+                            if third == 'A':
+                                return 'UP'
+                            elif third == 'B':
+                                return 'DOWN'
+                            elif third == 'C':
+                                return 'RIGHT'
+                            elif third == 'D':
+                                return 'LEFT'
+                            elif third == 'H':
+                                return 'HOME'
+                            elif third == 'F':
+                                return 'END'
+                return 'ESC'
+            
+            # Handle regular control keys
+            if first == '\r' or first == '\n':
+                return 'ENTER'
+            elif first == '\x7f':  # DEL
+                return 'BACK'
+            else:
+                return first
+                
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+
+def move_selection(current_index, key, total_items, columns=2):
+    """Move selection based on key press with proper bounds checking.
+    
+    Args:
+        current_index: Current selection index
+        key: Normalized key name
+        total_items: Total number of items
+        columns: Number of columns (default 2)
+    
+    Returns:
+        New index after move (or same if invalid move)
+    """
+    if key is None:
+        return current_index
+    
+    key_lower = key.lower()
+    
+    # Handle special keys
+    if key == 'UP' or key_lower == 'w':
+        # Move up: index - columns
+        new_index = current_index - columns
+        return max(0, new_index)
+    
+    elif key == 'DOWN' or key_lower == 's':
+        # Move down: index + columns
+        new_index = current_index + columns
+        return min(total_items - 1, new_index)
+    
+    elif key == 'RIGHT' or key_lower == 'd':
+        # Move right: check if in left column
+        row = current_index // columns
+        col = current_index % columns
+        
+        # Can only move right if in left column (col == 0)
+        if col == 0:
+            # Check if right column has item at this row
+            right_index = row * columns + 1
+            if right_index < total_items:
+                return right_index
+        return current_index
+    
+    elif key == 'LEFT' or key_lower == 'a':
+        # Move left: check if in right column
+        row = current_index // columns
+        col = current_index % columns
+        
+        # Can only move left if in right column (col == 1)
+        if col == 1:
+            left_index = row * columns + 0
+            return left_index
+        return current_index
+    
+    else:
+        # Other keys - stay in place
+        return current_index
+
+
+def render_grid(options, current_index, columns=2, qmark="➜", pointer="►", clear_screen=True):
+    """Render the grid menu with highlighting.
+    
+    Args:
+        options: List of option strings
+        current_index: Currently selected index
+        columns: Number of columns
+        qmark: Question mark character
+        pointer: Selection pointer character
+        clear_screen: Whether to clear screen before rendering
+    """
+    import os
+    
+    # Clear screen if requested
+    if clear_screen:
+        os.system('cls' if os.name == 'nt' else 'clear')
+    
+    # Print header
+    print(f"\n {qmark} Select (↑↓←→ navigate, Enter select, b back):\n")
+    
+    # Render in pairs (left, right) for strict 2-column layout
+    for i in range(0, len(options), 2):
+        left_item = options[i]
+        right_item = options[i + 1] if i + 1 < len(options) else ""
+        
+        # Determine which index is selected
+        left_selected = (current_index == i)
+        right_selected = (i + 1 < len(options)) and (current_index == i + 1)
+        
+        # Build left column with pointer if selected
+        if left_selected:
+            left_display = f"{pointer} {left_item}"
+        else:
+            left_display = f"  {left_item}"
+        
+        # Build right column with pointer if selected
+        if right_selected:
+            right_display = f"{pointer} {right_item}"
+        elif right_item:
+            right_display = f"  {right_item}"
+        else:
+            right_display = ""
+        
+        # Print row with proper spacing
+        if right_item:
+            print(f"  {left_display:<15} {right_display}")
+        else:
+            print(f"  {left_display}")
+    
+    print()
+
+
+def grid_select(options, columns=2, qmark="➜", pointer="►", style=None, clear_screen=True):
+    """Grid selection with FULL 2D arrow key navigation.
+    
+    Clean implementation with proper state management.
+    
+    Args:
+        options: List of selectable options
+        columns: Number of columns (default 2)
+        qmark: Question mark prefix
+        pointer: Selection pointer character
+        style: (unused, for compatibility)
+        clear_screen: Whether to clear screen on each render (default True)
+    
+    Returns:
+        Selected option string, or '🔙 Back' if cancelled
+    """
+    if not options:
+        return None
+    
+    # State management
+    total_items = len(options)
+    current_index = 0  # Start at first item
+    
+    # Main navigation loop
+    while True:
+        # Render current state
+        render_grid(options, current_index, columns, qmark, pointer)
+        
+        # Get input
+        key = get_input()
+        
+        if key is None:
+            continue
+        
+        # Debug: print current state
+        # print(f"[DEBUG] key={key}, index={current_index}, total={total_items}")
+        
+        # Handle selection keys
+        if key == 'ENTER' or key == '\r' or key == '\n':
+            return options[current_index]
+        
+        # Handle back/cancel
+        if key in ['BACK', 'ESC', 'b', 'B']:
+            return "🔙 Back"
+        
+        # Handle quit
+        if key.lower() == 'q':
+            return None
+        
+        # Move selection
+        new_index = move_selection(current_index, key, total_items, columns)
+        if new_index != current_index:
+            current_index = new_index
+            # Debug: print after movement
+            # print(f"[DEBUG] moved to index={current_index}")
 
 
 def refresh_menu_styles():
@@ -528,9 +818,7 @@ class InteractiveUI:
                 InteractiveUI.advanced_menu()
 
             elif "Help" in choice or "Docs" in choice:
-                from gitpush.ui.banner import show_shortcuts
-
-                show_shortcuts()
+                show_help_menu()
 
     @staticmethod
     def branch_menu():
