@@ -6,6 +6,29 @@ This module contains all CLI commands, keyboard shortcuts, and help documentatio
 
 from rich import box
 
+
+def _get_menu_styles():
+    """Get menu styles without creating a hard dependency on interactive UI module."""
+    import questionary
+
+    default_style = questionary.Style(
+        [
+            ("qmark", "fg:ansicyan bold"),
+            ("pointer", "fg:ansicyan bold"),
+            ("highlighted", "fg:ansicyan bold"),
+            ("selected", "fg:ansicyan bold"),
+            ("answer", "fg:ansicyan bold"),
+        ]
+    )
+
+    try:
+        from gitpush.ui.interactive import INPUT_STYLE, MAIN_MENU_STYLE
+
+        return INPUT_STYLE, MAIN_MENU_STYLE
+    except Exception:
+        # Fallback keeps help/docs usable even if interactive module is mid-load.
+        return default_style, default_style
+
 # ══════════════════════════════════════════════════════════════════════════════
 # CLI COMMANDS REFERENCE
 # ══════════════════════════════════════════════════════════════════════════════
@@ -376,7 +399,7 @@ def show_help_menu():
     from rich.panel import Panel
     from rich.table import Table
     from gitpush.ui.banner import current_theme
-    from gitpush.ui.interactive import INPUT_STYLE, MAIN_MENU_STYLE
+    INPUT_STYLE, MAIN_MENU_STYLE = _get_menu_styles()
     
     console = Console()
     primary = current_theme.colors.get("primary", "cyan")
@@ -411,28 +434,19 @@ def show_help_menu():
             break
         
         if "All Commands" in choice:
-            # Get flat list of command names
-            command_names = list(CLI_COMMANDS.keys())
-            
-            # Add back option as last item
-            all_options = command_names + ["🔙 Back"]
-            
-            # Use grid select with arrow key navigation
-            from gitpush.ui.interactive import grid_select
-            
-            detail_choice = grid_select(
-                all_options,
-                columns=2,
-                qmark="➜",
-                pointer="►",
-                style=INPUT_STYLE,
-            )
-            
-            # Handle selection - show details if a command is selected
-            if detail_choice and detail_choice != "🔙 Back":
-                # Show the command list first
-                show_command_list()
-                # Then show details
+            while True:
+                command_names = list(CLI_COMMANDS.keys())
+                detail_choice = questionary.select(
+                    "Select a command to view details:",
+                    choices=command_names + ["🔙 Back"],
+                    qmark="➜",
+                    pointer="►",
+                    style=INPUT_STYLE,
+                ).ask()
+
+                if not detail_choice or detail_choice == "🔙 Back":
+                    break
+
                 show_command_details(detail_choice)
         
         elif "Keyboard Shortcuts" in choice:
@@ -491,7 +505,7 @@ def show_all_shortcuts_menu():
     from rich.table import Table
     from rich.panel import Panel
     from gitpush.ui.banner import current_theme
-    from gitpush.ui.interactive import MAIN_MENU_STYLE
+    _, MAIN_MENU_STYLE = _get_menu_styles()
     
     console = Console()
     primary = current_theme.colors.get("primary", "cyan")
